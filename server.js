@@ -9,6 +9,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const notificationRoutes = require('./routes/notificationRoutes');
 const passwordRecoveryRoutes = require('./routes/passwordRecoveryRoutes');
+const categoryRoutes = require("./routes/categoryRoutes");
 
 
 
@@ -29,6 +30,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api', passwordRecoveryRoutes);
+
+app.use("/api/categories", categoryRoutes);
+
 
 
 // Error handling middleware

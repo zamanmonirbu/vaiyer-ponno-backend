@@ -13,6 +13,10 @@ const { protect, admin } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
+
+// Public routes
+router.route('/public').get(getPublicNotifications);  // Get all public notifications
+
 // Admin routes
 router.route('/')
     .post(protect, admin, createNotification)  // Create notification
@@ -23,9 +27,7 @@ router.route('/:id')
     .put(protect, admin, updateNotification)    // Update a notification
     .delete(protect, admin, deleteNotification); // Delete a notification
 
-// Public routes
-router.route('/public')
-    .get(getPublicNotifications);  // Get all public notifications
+
 
 router.route('/user')
     .get(protect, getUserNotifications);  // Get notifications for a specific user

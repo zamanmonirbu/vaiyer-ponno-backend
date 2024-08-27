@@ -16,7 +16,7 @@ const registerUser = async (req, res) => {
         const newUser = new User({ name, email, password: hashedPassword });
         await newUser.save();
 
-        const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '5h' });
 
         res.status(201).json({ 
             message: 'User registered successfully', 
@@ -43,12 +43,12 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '5h' });
 
         res.status(200).json({ 
             message: 'Login successful', 
             token, 
-            user: { id: user._id, name: user.name, email: user.email } 
+            user: { id: user._id, name: user.name, email: user.email,isAdmin:user.isAdmin } 
         });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });

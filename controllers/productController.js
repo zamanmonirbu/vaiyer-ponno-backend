@@ -1,63 +1,23 @@
-const Product = require('../models/Product');
+const Product = require("../models/Product");
 
-const getProducts = async (req, res) => {
-    const products = await Product.find({});
-    res.json(products);
+// Create a new product
+exports.createProduct = async (req, res) => {
+    // console.log(req.body)
+  try {
+    const newProduct = new Product(req.body);
+    await newProduct.save();
+    res.status(201).json(newProduct);
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
 };
 
-const getProductById = async (req, res) => {
-    const product = await Product.findById(req.params.id);
-
-    if (product) {
-        res.json(product);
-    } else {
-        res.status(404).json({ message: 'Product not found' });
-    }
+// Get all products
+exports.getProducts = async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching products", error });
+  }
 };
-
-const createProduct = async (req, res) => {
-    const { name, price, description, category, countInStock } = req.body;
-
-    const product = new Product({
-        name,
-        price,
-        description,
-        category,
-        countInStock,
-    });
-
-    const createdProduct = await product.save();
-    res.status(201).json(createdProduct);
-};
-
-const updateProduct = async (req, res) => {
-    const { name, price, description, category, countInStock } = req.body;
-
-    const product = await Product.findById(req.params.id);
-
-    if (product) {
-        product.name = name;
-        product.price = price;
-        product.description = description;
-        product.category = category;
-        product.countInStock = countInStock;
-
-        const updatedProduct = await product.save();
-        res.json(updatedProduct);
-    } else {
-        res.status(404).json({ message: 'Product not found' });
-    }
-};
-
-const deleteProduct = async (req, res) => {
-    const product = await Product.findById(req.params.id);
-
-    if (product) {
-        await product.remove();
-        res.json({ message: 'Product removed' });
-    } else {
-        res.status(404).json({ message: 'Product not found' });
-    }
-};
-
-module.exports = { getProducts, getProductById, createProduct, updateProduct, deleteProduct };

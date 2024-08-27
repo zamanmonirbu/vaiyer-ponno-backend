@@ -79,7 +79,7 @@ const deleteNotification = asyncHandler(async (req, res) => {
 // @route   GET /api/notifications/public
 // @access  Public
 const getPublicNotifications = asyncHandler(async (req, res) => {
-    const notifications = await Notification.find({ isPublic: true });
+    const notifications = await Notification.find();
     res.json(notifications);
 });
 
