@@ -12,6 +12,8 @@ const passwordRecoveryRoutes = require('./routes/passwordRecoveryRoutes');
 const categoryRoutes = require("./routes/categoryRoutes");
 const bannerRoutes = require('./routes/bannerRoutes');
 const galleryRoutes = require('./routes/galleryRoutes');
+const sellerRoutes = require('./routes/sellerRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 
 
@@ -32,9 +34,11 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api', passwordRecoveryRoutes);
-app.use("/api/categories", categoryRoutes);
+app.use("/api", categoryRoutes);
 app.use('/api', bannerRoutes);
 app.use('/api/gallery', galleryRoutes);
+app.use('/api/seller', sellerRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 

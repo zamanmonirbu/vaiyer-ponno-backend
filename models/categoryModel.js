@@ -1,14 +1,8 @@
-// models/Category.js
 const mongoose = require('mongoose');
-
-const subCategorySchema = new mongoose.Schema({
-  name: String,
-  subSubCategories: [String],
-});
 
 const categorySchema = new mongoose.Schema({
   category: { type: String, required: true },
-  subCategories: [subCategorySchema],
+  subCategories: [{ type: String, required: true }],
 });
 
 const Category = mongoose.model('Category', categorySchema);
