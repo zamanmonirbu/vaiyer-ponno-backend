@@ -10,6 +10,8 @@ const { errorHandler } = require('./middleware/errorMiddleware');
 const notificationRoutes = require('./routes/notificationRoutes');
 const passwordRecoveryRoutes = require('./routes/passwordRecoveryRoutes');
 const categoryRoutes = require("./routes/categoryRoutes");
+const bannerRoutes = require('./routes/bannerRoutes');
+const galleryRoutes = require('./routes/galleryRoutes');
 
 
 
@@ -30,8 +32,11 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api', passwordRecoveryRoutes);
-
 app.use("/api/categories", categoryRoutes);
+app.use('/api', bannerRoutes);
+app.use('/api/gallery', galleryRoutes);
+
+
 
 
 
