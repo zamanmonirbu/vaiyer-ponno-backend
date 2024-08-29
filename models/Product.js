@@ -9,9 +9,9 @@ const productSchema = new mongoose.Schema({
   description: { type: String, required: true },
   video: { type: String, required: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
-  subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory' },
+  subCategory: { type: String, required: false },  // Use string if subCategory is embedded in Category
   ratings: { type: Number, required: true },
-  comments: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment', required: true },
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }], // Assuming comments are an array
 });
 
 const Product = mongoose.model('Product', productSchema);

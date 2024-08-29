@@ -7,7 +7,7 @@ exports.createProduct = async (req, res) => {
     try {
         const newProduct = new Product({
             name,
-            seller: req.user.id, // Seller ID from authenticated user
+            seller: req.seller._id, // Seller ID from authenticated user
             imageURL,
             subImages,
             unitPrice,
@@ -16,9 +16,9 @@ exports.createProduct = async (req, res) => {
             category,
             subCategory,
             ratings: 0, // Default ratings to 0
-            comments: [] // Default comments to an empty array
+            
         });
-
+console.log(newProduct)
         const savedProduct = await newProduct.save();
         res.status(201).json(savedProduct);
     } catch (err) {
@@ -56,7 +56,7 @@ exports.updateProduct = async (req, res) => {
         if (!product) return res.status(404).json({ message: 'Product not found' });
 
         // Ensure only the seller can update the product
-        if (product.seller.toString() !== req.user.id) {
+        if (product.seller.toString() !== req.seller._id) {
             return res.status(403).json({ message: 'Unauthorized action' });
         }
 

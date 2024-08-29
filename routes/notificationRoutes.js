@@ -9,8 +9,8 @@ const {
     getUserNotifications,
     markNotificationAsRead
 } = require('../controllers/notificationController');
-const { protect, admin } = require('../middleware/authMiddleware');
 
+const { adminAuth, userAuth } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 
@@ -19,20 +19,20 @@ router.route('/public').get(getPublicNotifications);  // Get all public notifica
 
 // Admin routes
 router.route('/')
-    .post(protect, admin, createNotification)  // Create notification
-    .get(protect, admin, getAllNotifications);  // Get all notifications for admin
+    .post(adminAuth, createNotification)  // Create notification
+    .get(adminAuth, getAllNotifications);  // Get all notifications for admin
 
 router.route('/:id')
-    .get(protect, admin, getNotificationById)   // Get a single notification
-    .put(protect, admin, updateNotification)    // Update a notification
-    .delete(protect, admin, deleteNotification); // Delete a notification
+    .get(adminAuth, getNotificationById)   // Get a single notification
+    .put(adminAuth, updateNotification)    // Update a notification
+    .delete(adminAuth, deleteNotification); // Delete a notification
 
 
 
 router.route('/user')
-    .get(protect, getUserNotifications);  // Get notifications for a specific user
+    .get(userAuth, getUserNotifications);  // Get notifications for a specific user
 
 router.route('/:id/read')
-    .put(protect, markNotificationAsRead);  // Mark notification as read
+    .put(userAuth, markNotificationAsRead);  // Mark notification as read
 
 module.exports = router;

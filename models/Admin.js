@@ -10,17 +10,6 @@ const adminSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false }
 });
 
-// Hash password before saving
-adminSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-  next();
-});
 
-// Method to compare passwords
-adminSchema.methods.comparePassword = function (password) {
-  return bcrypt.compare(password, this.password);
-};
 
 module.exports = mongoose.model('Admin', adminSchema);
