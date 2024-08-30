@@ -1,11 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const { loginSeller, registerSeller } = require('../controllers/sellerController');
+const sellerController = require('../controllers/sellerController');
 
-// Route to login seller
-router.post('/login', loginSeller);
+// Register a new seller
+router.post('/register', sellerController.registerSeller);
 
-// Route to register seller
-router.post('/register', registerSeller);
+// Login a seller
+router.post('/login', sellerController.loginSeller);
+
+// Get all sellers
+router.get('/sellers', sellerController.getSellers);
+// Get all sellers
+router.get('/sellers/deactivated', sellerController.deactivateSellers);
+
+// Get a seller by ID
+router.get('/sellers/:id', sellerController.getSellerById);
+
+// Update a seller
+router.put('/sellers/:id', sellerController.updateSeller);
+
+// Delete a seller
+router.delete('/sellers/:id', sellerController.deleteSeller);
 
 module.exports = router;

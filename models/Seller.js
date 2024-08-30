@@ -1,33 +1,42 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
-// Define the schema for Seller
 const sellerSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  address: { type: String },
-  mobile: { type: String },
-  img: { type: String },
-  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+  address: {
+    type: String,
+    default: 'Not Given', 
+  },
+  mobile: {
+    type: String,
+    default: '+8801', 
+  },
+  img: {
+    type: String,
+    default: 'https://cdn-icons-png.flaticon.com/512/5853/5853761.png', 
+  },
+  products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product', default: [] }],
   star: { type: Number, default: 0 },
-  about: { type: String },
-  video: { type: String },
-  accountNumbers: [{ type: String }],
+  about: {
+    type: String,
+    default: 'Not Given', 
+  },
+  video: {
+    type: String,
+    default: 'https://www.youtube.com/watch?v=sPQfMe39oSs', 
+  },
+  
+  accountNumbers: {
+    type: [{ name: String, number: String }],
+    default: [
+      { name: 'Bank A', number: '12345678' },
+      { name: 'Bank B', number: '87654321' },
+      { name: 'Bank C', number: '11223344' },
+      { name: 'Bank D', number: '44332211' },
+    ],
+  },
   isSeller: { type: Boolean, default: true },
 });
-
-// Hash password before saving
-sellerSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-  next();
-});
-
-// Method to compare passwords
-sellerSchema.methods.comparePassword = function (password) {
-  return bcrypt.compare(password, this.password);
-};
 
 module.exports = mongoose.model('Seller', sellerSchema);

@@ -1,119 +1,79 @@
-const asyncHandler = require('express-async-handler');
 const Notification = require('../models/Notification');
 
-// @desc    Create a new notification
-// @route   POST /api/notifications
-// @access  Private/Admin
-const createNotification = asyncHandler(async (req, res) => {
-    const { title, message, recipient, isPublic } = req.body;
-
-    const notification = new Notification({
-        title,
-        message,
-        recipient,
-        isPublic
-    });
-
-    const createdNotification = await notification.save();
-    res.status(201).json(createdNotification);
-});
-
-// @desc    Get all notifications (Admin)
+// @desc    Get all notifications
 // @route   GET /api/notifications
-// @access  Private/Admin
-const getAllNotifications = asyncHandler(async (req, res) => {
-    const notifications = await Notification.find({});
-    res.json(notifications);
-});
+const getNotifications = async (req, res) => {
+    try {
+        const notifications = await Notification.find();
+        res.json(notifications);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 // @desc    Get a single notification by ID
 // @route   GET /api/notifications/:id
-// @access  Private/Admin
-const getNotificationById = asyncHandler(async (req, res) => {
-    const notification = await Notification.findById(req.params.id);
-
-    if (notification) {
+const getNotificationById = async (req, res) => {
+    try {
+        const notification = await Notification.findById(req.params.id);
+        if (!notification) {
+            return res.status(404).json({ message: 'Notification not found' });
+        }
         res.json(notification);
-    } else {
-        res.status(404);
-        throw new Error('Notification not found');
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-});
+};
+
+// @desc    Create a new notification
+// @route   POST /api/notifications
+const createNotification = async (req, res) => {
+    const { message, type } = req.body;
+    try {
+        const newNotification = new Notification({ message, type });
+        const savedNotification = await newNotification.save();
+        res.status(201).json(savedNotification);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
 
 // @desc    Update a notification
 // @route   PUT /api/notifications/:id
-// @access  Private/Admin
-const updateNotification = asyncHandler(async (req, res) => {
-    const notification = await Notification.findById(req.params.id);
-
-    if (notification) {
-        notification.title = req.body.title || notification.title;
-        notification.message = req.body.message || notification.message;
-        notification.recipient = req.body.recipient || notification.recipient;
-        notification.isPublic = req.body.isPublic || notification.isPublic;
-
-        const updatedNotification = await notification.save();
+const updateNotification = async (req, res) => {
+    try {
+        const updatedNotification = await Notification.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        if (!updatedNotification) {
+            return res.status(404).json({ message: 'Notification not found' });
+        }
         res.json(updatedNotification);
-    } else {
-        res.status(404);
-        throw new Error('Notification not found');
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
-});
+};
 
 // @desc    Delete a notification
 // @route   DELETE /api/notifications/:id
-// @access  Private/Admin
-const deleteNotification = asyncHandler(async (req, res) => {
-    const notification = await Notification.findById(req.params.id);
-
-    if (notification) {
-        await notification.remove();
+const deleteNotification = async (req, res) => {
+    try {
+        const deletedNotification = await Notification.findByIdAndDelete(req.params.id);
+        if (!deletedNotification) {
+            return res.status(404).json({ message: 'Notification not found' });
+        }
         res.json({ message: 'Notification removed' });
-    } else {
-        res.status(404);
-        throw new Error('Notification not found');
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-});
-
-// @desc    Get all public notifications
-// @route   GET /api/notifications/public
-// @access  Public
-const getPublicNotifications = asyncHandler(async (req, res) => {
-    const notifications = await Notification.find();
-    res.json(notifications);
-});
-
-// @desc    Get all notifications for a specific user
-// @route   GET /api/notifications/user
-// @access  Private
-const getUserNotifications = asyncHandler(async (req, res) => {
-    const notifications = await Notification.find({ recipient: req.user._id });
-    res.json(notifications);
-});
-
-// @desc    Mark a notification as read
-// @route   PUT /api/notifications/:id/read
-// @access  Private
-const markNotificationAsRead = asyncHandler(async (req, res) => {
-    const notification = await Notification.findById(req.params.id);
-
-    if (notification) {
-        notification.isRead = true;
-        const updatedNotification = await notification.save();
-        res.json(updatedNotification);
-    } else {
-        res.status(404);
-        throw new Error('Notification not found');
-    }
-});
+};
 
 module.exports = {
-    createNotification,
-    getAllNotifications,
+    getNotifications,
     getNotificationById,
+    createNotification,
     updateNotification,
     deleteNotification,
-    getPublicNotifications,
-    getUserNotifications,
-    markNotificationAsRead
 };

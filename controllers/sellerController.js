@@ -2,75 +2,136 @@ const Seller = require('../models/Seller');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-// Login Seller
+
+// Register a new seller
+exports.registerSeller = async (req, res) => {
+  try {
+    const { name, email, password, address, mobile, img, products, star, about, video, accountNumbers, isSeller } = req.body;
+
+    // Check if the seller already exists
+    const existingSeller = await Seller.findOne({ email });
+    if (existingSeller) {
+      return res.status(400).json({ message: 'Seller already exists' });
+    }
+
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const seller = new Seller({
+      name,
+      email,
+      password: hashedPassword,
+      address,
+      mobile,
+      img,
+      products,
+      star,
+      about,
+      video,
+      accountNumbers,
+      isSeller,
+    });
+
+    await seller.save();
+    res.status(201).json({ message: 'Seller registered successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Login a seller
 exports.loginSeller = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // Find seller by email
+
+    // Find the seller by email
     const seller = await Seller.findOne({ email });
-
     if (!seller) {
-      return res.status(404).json({ error: 'Seller not found' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Compare passwords
-    const isMatch = await seller.comparePassword(password);
-
+    // Compare the provided password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, seller.password);
     if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Create a token (You can add more claims as needed)
-    const token = jwt.sign(
-      { id: seller._id, email: seller.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '12h' }
-    );
+    // Generate a JWT token
+    const token = jwt.sign({ id: seller._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    res.json({
-      message: 'Login successful',
+    res.status(200).json({
       token,
       seller: {
         id: seller._id,
         name: seller.name,
-        email: seller.email
-      }
+        email: seller.email,
+        isSeller: seller.isSeller,
+      },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Register Seller
-exports.registerSeller = async (req, res) => {
+
+// Get all sellers
+exports.getSellers = async (req, res) => {
   try {
-    const { name, email, password, address, mobile, img, about, video, accountNumbers } = req.body;
-
-    // Check if seller already exists
-    const existingSeller = await Seller.findOne({ email });
-    if (existingSeller) {
-      return res.status(400).json({ error: 'Seller already exists' });
-    }
-
-    // Create a new seller
-    const newSeller = new Seller({
-      name,
-      email,
-      password,
-      address,
-      mobile,
-      img,
-      about,
-      video,
-      accountNumbers
-    });
-
-    // Save seller to the database
-    await newSeller.save();
-
-    res.status(201).json({ message: 'Seller registered successfully' });
+    const sellers = await Seller.find({isSeller:true});
+    console.log(sellers)
+    res.status(200).json(sellers);
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: error.message });
+  }
+};
+exports.deactivateSellers = async (req, res) => {
+  try {
+    const sellers = await Seller.find({isSeller:false});
+    console.log(sellers)
+    res.status(200).json(sellers);
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get a single seller by ID
+exports.getSellerById = async (req, res) => {
+  try {
+    const seller = await Seller.findById(req.params.id);
+    if (!seller) {
+      return res.status(404).json({ message: 'Seller not found' });
+    }
+    res.status(200).json(seller);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Update a seller
+exports.updateSeller = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const seller = await Seller.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
+    if (!seller) {
+      return res.status(404).json({ message: 'Seller not found' });
+    }
+    res.status(200).json(seller);
+  } catch (error) {
+    console.log(error.message)
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Delete a seller
+exports.deleteSeller = async (req, res) => {
+  try {
+    const seller = await Seller.findByIdAndDelete(req.params.id);
+    if (!seller) {
+      return res.status(404).json({ message: 'Seller not found' });
+    }
+    res.status(200).json({ message: 'Seller deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };

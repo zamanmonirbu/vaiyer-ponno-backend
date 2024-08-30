@@ -15,7 +15,8 @@ exports.loginAdmin = async (req, res) => {
     }
 
     // Compare passwords
-    const isMatch = await admin.comparePassword(password);
+    // const isMatch = await admin.comparePassword(password);
+    const isMatch = await bcrypt.compare(password, admin.password);
 
     if (!isMatch || !admin.isAdmin) {
       return res.status(400).json({ error: 'Invalid credentials' });
@@ -34,7 +35,8 @@ exports.loginAdmin = async (req, res) => {
       admin: {
         id: admin._id,
         name: admin.name,
-        email: admin.email
+        email: admin.email,
+        isAdmin:admin.isAdmin
       }
     });
   } catch (error) {
@@ -47,7 +49,7 @@ exports.loginAdmin = async (req, res) => {
 // Register Admin
 exports.registerAdmin = async (req, res) => {
   try {
-    const { name, email, password, img } = req.body;
+    const { name, email, password } = req.body;
 
     // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email });
@@ -58,13 +60,13 @@ exports.registerAdmin = async (req, res) => {
     // Hash the password before saving it to the database
     const saltRounds = 10; // You can adjust the number of salt rounds as needed
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
+    console.log(hashedPassword);
     // Create a new admin with the hashed password
     const newAdmin = new Admin({
       name,
       email,
       password: hashedPassword,
-      img,
+     
     });
 
     // Save the admin to the database
