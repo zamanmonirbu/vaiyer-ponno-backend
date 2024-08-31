@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+// const Product = require('./Product');
+
 
 const sellerSchema = new mongoose.Schema({
   name: { type: String, required: true },

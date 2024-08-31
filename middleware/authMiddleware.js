@@ -26,25 +26,26 @@ const userAuth = async (req, res, next) => {
 // Protect routes and check for seller role
 const sellerAuth = async (req, res, next) => {
     let token;
-    console.log("Token",req.headers.authorization)
+    // console.log("Token",req.headers.authorization,req.headers)
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            console.log("TRue or false",decoded)
+            // console.log("TRue or false",decoded)
             req.seller = await Seller.findById(decoded.id).select('-password');
-            console.log("req.body",req.seller )
+            // console.log("req.body",req.seller )
             if (!req.seller) {
                 return res.status(401).json({ message: 'User not found' });
             }
             // Check if the user is a seller
+            // console.log(req.seller);
             if (req.seller && req.seller.isSeller) {
                 next();
             } else {
                 res.status(403).json({ message: 'Seller authorization required' });
             }
         } catch (error) {
-            res.status(401).json({ message: 'Not authorized, token failed' });
+            res.status(401).json({ message: 'Not authorized, token failed in' });
         }
     } else {
         res.status(401).json({ message: 'Not authorized, no token' });

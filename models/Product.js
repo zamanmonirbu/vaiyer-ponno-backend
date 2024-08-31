@@ -1,19 +1,29 @@
 const mongoose = require('mongoose');
+// const Category = require('./Category'); 
+// const SubCategory = require('./SubCategory'); 
+// const Review = require('./Review'); 
+// const Order = require('./Order');
+// const Rating = require('./Rating');
+// const Seller = require('./Seller');
+
+
 
 const productSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  seller: { type: String, required: true },
-  imageURL: { type: String, required: true },
-  subImages: { type: [String], required: true },
-  unitPrice: { type: Number, required: true },
-  description: { type: String, required: true },
-  video: { type: String, required: true },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
-  subCategory: { type: String, required: false },  // Use string if subCategory is embedded in Category
-  ratings: { type: Number, required: true },
-  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }], // Assuming comments are an array
+    name: { type: String, required: true },
+    seller: { type: mongoose.Schema.Types.ObjectId, ref: 'Seller', required: true },
+    imageURL: { type: String, required: true },
+    subImages: { type: [String], required: true },
+    unitPrice: { type: Number, required: true },
+    description: { type: String, required: true },
+    video: { type: String, required: true },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+    subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory', required: false },
+    order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: [] }],
+    rating: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rating' }],
+    comment: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }] // Reference to Review model
 });
 
-const Product = mongoose.model('Product', productSchema);
+// Use mongoose.models to avoid overwriting the model
+const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
 
 module.exports = Product;

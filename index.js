@@ -14,6 +14,7 @@ const bannerRoutes = require('./routes/bannerRoutes');
 const galleryRoutes = require('./routes/galleryRoutes');
 const sellerRoutes = require('./routes/sellerRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const { sellerAuth } = require('./middleware/authMiddleware');
 
 
 
@@ -28,17 +29,18 @@ app.use(express.json());
 app.use(cors())
 
 // Routes
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/products', productRoutes);
+app.use('/api/gallery', galleryRoutes);
+app.use('/api/seller', sellerRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/products', productRoutes);
 app.use('/api', passwordRecoveryRoutes);
 app.use("/api", categoryRoutes);
 app.use('/api', bannerRoutes);
-app.use('/api/gallery', galleryRoutes);
-app.use('/api/seller', sellerRoutes);
-app.use('/api/admin', adminRoutes);
+
 
 
 
