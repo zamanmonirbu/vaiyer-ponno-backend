@@ -7,6 +7,7 @@ const getNotifications = async (req, res) => {
         const notifications = await Notification.find();
         res.json(notifications);
     } catch (error) {
+        console.log(error.message)
         res.status(500).json({ message: error.message });
     }
 };

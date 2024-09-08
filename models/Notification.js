@@ -13,7 +13,8 @@ const notificationSchema = mongoose.Schema({
     
 }, {
     timestamps: true
-});
+},
+{ timestamps: true });
 
 const Notification = mongoose.model('Notification', notificationSchema);
 

@@ -9,7 +9,8 @@ const bannerSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
-});
+},
+{ timestamps: true });
 
 const Banner = mongoose.model('Banner', bannerSchema);
 

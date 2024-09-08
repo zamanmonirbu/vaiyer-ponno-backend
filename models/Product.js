@@ -1,16 +1,9 @@
 const mongoose = require('mongoose');
-// const Category = require('./Category'); 
-// const SubCategory = require('./SubCategory'); 
-// const Review = require('./Review'); 
-// const Order = require('./Order');
-// const Rating = require('./Rating');
-// const Seller = require('./Seller');
-
-
 
 const productSchema = new mongoose.Schema({
     name: { type: String, required: true },
     seller: { type: mongoose.Schema.Types.ObjectId, ref: 'Seller', required: true },
+    gender:{ type: String, required: true },
     imageURL: { type: String, required: true },
     subImages: { type: [String], required: true },
     unitPrice: { type: Number, required: true },
@@ -20,10 +13,10 @@ const productSchema = new mongoose.Schema({
     subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory', required: false },
     order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: [] }],
     rating: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rating' }],
-    comment: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }] // Reference to Review model
-});
+    comment: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
+    offer: { type: Number, required: true }
+}, { timestamps: true }); 
 
-// Use mongoose.models to avoid overwriting the model
 const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
 
 module.exports = Product;

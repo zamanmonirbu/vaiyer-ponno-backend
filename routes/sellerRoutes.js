@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const sellerController = require('../controllers/sellerController');
+const productController = require('../controllers/productController');
+const { sellerAuth } = require('../middleware/authMiddleware');
 
 // Register a new seller
 router.post('/register', sellerController.registerSeller);
@@ -10,11 +12,18 @@ router.post('/login', sellerController.loginSeller);
 
 // Get all sellers
 router.get('/sellers', sellerController.getSellers);
+
+router.get('/products',sellerAuth, productController.getSellerProducts);
 // Get all sellers
 router.get('/sellers/deactivated', sellerController.deactivateSellers);
 
 // Get a seller by ID
 router.get('/sellers/:id', sellerController.getSellerById);
+
+
+
+// Route to fetch products by category for a specific seller
+router.get('/:sellerId/products/category/:category', sellerController.fetchProductsByCategoryOfSeller);
 
 // Update a seller
 router.put('/sellers/:id', sellerController.updateSeller);

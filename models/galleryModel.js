@@ -8,7 +8,8 @@ const gallerySchema = new mongoose.Schema({
     isMedium: Boolean,
     isLarge: Boolean,
     category:String,
-});
+},
+{ timestamps: true });
 
 const Gallery = mongoose.model('Gallery', gallerySchema);
 

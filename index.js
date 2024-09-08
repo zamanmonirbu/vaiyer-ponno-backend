@@ -14,8 +14,8 @@ const bannerRoutes = require('./routes/bannerRoutes');
 const galleryRoutes = require('./routes/galleryRoutes');
 const sellerRoutes = require('./routes/sellerRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const { sellerAuth } = require('./middleware/authMiddleware');
-
+const commentRoutes = require("./routes/commentRoutes");
+const offerBannerRoutes=require("./routes/offerBannerRoutes")
 
 
 dotenv.config();
@@ -40,7 +40,8 @@ app.use('/api/products', productRoutes);
 app.use('/api', passwordRecoveryRoutes);
 app.use("/api", categoryRoutes);
 app.use('/api', bannerRoutes);
-
+app.use("/api", commentRoutes);
+app.use("/api/offer/banners",offerBannerRoutes);
 
 
 

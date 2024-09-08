@@ -55,6 +55,26 @@ exports.getCategoryById = async (req, res) => {
   }
 };
 
+exports.getCategoriesWithLimitedProducts = async (req, res) => {
+  try {
+    const categories = await Category.find()
+      .populate({
+        path: 'products',
+        options: { limit: 4 } // Limit the number of products to 4 for each category
+      })
+      .exec();
+
+    if (!categories || categories.length === 0) {
+      return res.status(404).json({ message: 'No categories found' });
+    }
+
+    res.json(categories);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching categories with products', error });
+  }
+};
+
+
 // Update a category
 exports.updateCategory = async (req, res) => {
   try {

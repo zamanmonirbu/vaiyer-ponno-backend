@@ -14,16 +14,17 @@ const userSchema = mongoose.Schema(
             type: String,
             required: true,
         },
-        isAdmin: {
-            type: Boolean,
-            required: true,
-            default: false,
-        },
-        isSeller: {
-            type: Boolean,
-            required: true,
-            default: false,
-        },
+        image: {
+            type: String,
+            
+        },      
+        address: {
+            type: String,           
+        },      
+        order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: [] }],
+        
+
+        
     },
     {
         timestamps: true,

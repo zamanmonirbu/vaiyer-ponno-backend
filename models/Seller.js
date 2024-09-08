@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-// const Product = require('./Product');
-
 
 const sellerSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -19,6 +17,9 @@ const sellerSchema = new mongoose.Schema({
     default: 'https://cdn-icons-png.flaticon.com/512/5853/5853761.png', 
   },
   products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product', default: [] }],
+  category: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: [] }],
+  order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: [] }],
+  subCategory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory', default: [] }],
   star: { type: Number, default: 0 },
   about: {
     type: String,
@@ -28,6 +29,7 @@ const sellerSchema = new mongoose.Schema({
     type: String,
     default: 'https://www.youtube.com/watch?v=sPQfMe39oSs', 
   },
+  // categoryVideo:[{type: String,default: 'https://www.youtube.com/watch?v=sPQfMe39oSs',}],
   
   accountNumbers: {
     type: [{ name: String, number: String }],
@@ -39,6 +41,7 @@ const sellerSchema = new mongoose.Schema({
     ],
   },
   isSeller: { type: Boolean, default: true },
-});
+},
+{ timestamps: true });
 
 module.exports = mongoose.model('Seller', sellerSchema);

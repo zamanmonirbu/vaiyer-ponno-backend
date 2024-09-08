@@ -60,7 +60,6 @@ exports.registerAdmin = async (req, res) => {
     // Hash the password before saving it to the database
     const saltRounds = 10; // You can adjust the number of salt rounds as needed
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    console.log(hashedPassword);
     // Create a new admin with the hashed password
     const newAdmin = new Admin({
       name,

@@ -1,6 +1,7 @@
 const Seller = require('../models/Seller');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const Product = require('../models/Product');
 
 
 // Register a new seller
@@ -57,7 +58,7 @@ exports.loginSeller = async (req, res) => {
     }
 
     // Generate a JWT token
-    const token = jwt.sign({ id: seller._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: seller._id }, process.env.JWT_SECRET, { expiresIn: '12h' });
 
     res.status(200).json({
       token,
@@ -97,8 +98,13 @@ exports.deactivateSellers = async (req, res) => {
 
 // Get a single seller by ID
 exports.getSellerById = async (req, res) => {
+
   try {
-    const seller = await Seller.findById(req.params.id);
+    const seller = await Seller.findById(req.params.id)
+    .populate('products') // Populate products
+    .populate('category') // Populate categories
+    .populate('subCategory') // Populate subcategories
+    .populate('order'); // Populate orders
     if (!seller) {
       return res.status(404).json({ message: 'Seller not found' });
     }
@@ -107,6 +113,28 @@ exports.getSellerById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+// Controller to fetch products by category for a specific seller
+exports.fetchProductsByCategoryOfSeller = async (req, res) => {
+  const { sellerId, category } = req.params;
+
+  console.log(sellerId, category)
+
+
+  try {
+    const products = await Product.find({ seller: sellerId, category });
+    if (!products || products.length === 0) {
+      return res.status(404).json({ error: 'No products found for this category and seller.' });
+    }
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ error: 'Server error. Please try again later.' });
+  }
+};
+
 
 // Update a seller
 exports.updateSeller = async (req, res) => {
