@@ -6,16 +6,21 @@ const Admin = require('../models/Admin');
 // Protect routes and check for user role
 const userAuth = async (req, res, next) => {
     let token;
+    console.log(req.headers)
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
+            console.log(token)
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            console.log(decoded)
             req.user = await User.findById(decoded.userId).select('-password');
             if (!req.user) {
+                console.log("not found")
                 return res.status(401).json({ message: 'User not found' });
             }
             next();
         } catch (error) {
+            console.log("not auth")
             res.status(401).json({ message: 'Not authorized, token failed' });
         }
     } else {

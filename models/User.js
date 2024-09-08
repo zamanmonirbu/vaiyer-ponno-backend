@@ -19,7 +19,8 @@ const userSchema = mongoose.Schema(
             
         },      
         address: {
-            type: String,           
+            type: String,
+            default:null,        
         },      
         order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: [] }],
         

@@ -3,8 +3,8 @@ const { getUserProfile, updateUserProfile } = require('../controllers/userContro
 const { userAuth } = require('../middleware/authMiddleware');
 const router = express.Router();
 
-router.route('/profile')
-.get(userAuth, getUserProfile)
-.put(userAuth, updateUserProfile);
+router.route('/profile/:id')
+.get( getUserProfile)
+.put(updateUserProfile);
 
 module.exports = router;
