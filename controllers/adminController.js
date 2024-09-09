@@ -134,7 +134,7 @@ exports.deleteAdmin = async (req, res) => {
       res.status(404).json({ message: 'Admin not found' });
     }
   } catch (error) {
-    console.log(error.message);
+    // console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };

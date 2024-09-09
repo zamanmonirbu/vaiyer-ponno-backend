@@ -79,7 +79,7 @@ exports.loginSeller = async (req, res) => {
 exports.getSellers = async (req, res) => {
   try {
     const sellers = await Seller.find({isSeller:true});
-    console.log(sellers)
+    // console.log(sellers)
     res.status(200).json(sellers);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -88,10 +88,10 @@ exports.getSellers = async (req, res) => {
 exports.deactivateSellers = async (req, res) => {
   try {
     const sellers = await Seller.find({isSeller:false});
-    console.log(sellers)
+    // console.log(sellers)
     res.status(200).json(sellers);
   } catch (error) {
-    console.log(error.message)
+    // console.log(error.message)
     res.status(500).json({ error: error.message });
   }
 };
@@ -119,7 +119,7 @@ exports.getSellerById = async (req, res) => {
 exports.fetchProductsByCategoryOfSeller = async (req, res) => {
   const { sellerId, category } = req.params;
 
-  console.log(sellerId, category)
+  // console.log(sellerId, category)
 
 
   try {
@@ -130,7 +130,7 @@ exports.fetchProductsByCategoryOfSeller = async (req, res) => {
 
     res.status(200).json(products);
   } catch (error) {
-    console.log(error.message);
+    // console.log(error.message);
     res.status(500).json({ error: 'Server error. Please try again later.' });
   }
 };
@@ -146,7 +146,7 @@ exports.updateSeller = async (req, res) => {
     }
     res.status(200).json(seller);
   } catch (error) {
-    console.log(error.message)
+    // console.log(error.message)
     res.status(400).json({ error: error.message });
   }
 };

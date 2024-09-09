@@ -12,7 +12,7 @@ const registerUser = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log(hashedPassword);
+        // console.log(hashedPassword);
         const newUser = new User({ name, email, password: hashedPassword });
         await newUser.save();
 
@@ -38,7 +38,7 @@ const loginUser = async (req, res) => {
         }
         // a@gmail.com
         const isPasswordMatch = await bcrypt.compare(password, user.password);
-        console.log((password, user.password));
+        // console.log((password, user.password));
         if (!isPasswordMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }

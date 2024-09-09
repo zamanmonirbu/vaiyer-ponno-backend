@@ -15,32 +15,31 @@ const getAllProducts = async (req, res) => {
         path: "category",
         populate: {
           path: "subCategories", // Populate the subCategories inside category
-          model: "SubCategory" // The model name should be SubCategory or whatever you named it in your schema
-        }
+          model: "SubCategory", // The model name should be SubCategory or whatever you named it in your schema
+        },
       })
       .populate({
         path: "subCategory",
         populate: {
           path: "category", // Populate the category inside subCategory if necessary
-          model: "Category" // The model name should be Category or whatever you named it in your schema
-        }
+          model: "Category", // The model name should be Category or whatever you named it in your schema
+        },
       })
       .populate("comment");
 
     // Make sure you are logging the length of products returned
     // console.log(`Fetched products count: ${products.length}`);
-    
+
     res.status(200).json(products);
   } catch (error) {
-    console.log(error.message);
+    // console.log(error.message);
     res.status(400).json({ message: error.message });
   }
 };
 
-
 // Controller to get a single product by ID
 const getProductById = async (req, res) => {
-  const {id}=req.params;
+  const { id } = req.params;
   // console.log(id)
   try {
     const product = await Product.findById(req.params.id)
@@ -52,7 +51,7 @@ const getProductById = async (req, res) => {
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.status(200).json(product);
   } catch (error) {
-    console.log(error.message)
+    // console.log(error.message)
     res.status(400).json({ message: error.message });
   }
 };
@@ -73,19 +72,10 @@ const getSellerProducts = async (req, res) => {
         populate: {
           path: "category", // If subCategory has a reference back to the 'category'
         },
-      })
-
-      // .populate({
-      //   path: "comments",
-      //   populate: {
-      //     path: "user", // Assuming comments have a 'user' field to populate
-      //   },
-      // })
-      ;
-
+      });
     res.json(products);
   } catch (error) {
-    console.log(error.message);
+    // console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -96,12 +86,12 @@ const getMostRatedProductsByCategory = async (req, res) => {
       {
         $addFields: {
           averageRating: {
-            $avg: "$ratings" // Compute the average rating for each product
-          }
-        }
+            $avg: "$ratings", // Compute the average rating for each product
+          },
+        },
       },
       {
-        $sort: { averageRating: -1 } // Sort all products by average rating in descending order
+        $sort: { averageRating: -1 }, // Sort all products by average rating in descending order
       },
       {
         $group: {
@@ -133,23 +123,26 @@ const getMostRatedProductsByCategory = async (req, res) => {
   }
 };
 
-
 // Controller function to get products with offer > 10 and sorted by offer in descending order
 const getProductsWithHighOffer = async (req, res) => {
   try {
     // Find products where offer is greater than 10 and sort them by offer in descending order
-    const products = await Product.find({ offer: { $gt: 10 } }).sort({ offer: -1 });
+    const products = await Product.find({ offer: { $gt: 10 } }).sort({
+      offer: -1,
+    });
 
     // If no products are found
     if (!products.length) {
-      return res.status(404).json({ message: 'No products with high offers found.' });
+      return res
+        .status(404)
+        .json({ message: "No products with high offers found." });
     }
 
     // Return the list of products
     res.status(200).json(products);
   } catch (error) {
     // Handle errors and send a response with status 500
-    res.status(500).json({ message: 'Server Error', error: error.message });
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
@@ -173,7 +166,7 @@ const getProductsByCategory = async (req, res) => {
         },
       });
 
-    console.log("Category found:", category);
+    // console.log("Category found:", category);
 
     if (!category) {
       return res.status(404).json({ message: "Category not found." });
@@ -184,7 +177,11 @@ const getProductsByCategory = async (req, res) => {
     const subCategories = category.subCategories;
 
     if (products.length === 0 && subCategories.length === 0) {
-      return res.status(404).json({ message: "No products or subcategories found in this category." });
+      return res
+        .status(404)
+        .json({
+          message: "No products or subcategories found in this category.",
+        });
     }
 
     // Respond with both products and subcategory details
@@ -194,7 +191,6 @@ const getProductsByCategory = async (req, res) => {
     res.status(500).json({ message: "Server error, please try again later." });
   }
 };
-
 
 // Controller to create a new product
 const createProduct = async (req, res) => {
@@ -271,8 +267,6 @@ const createProduct = async (req, res) => {
   }
 };
 
-
-
 // Controller to update a product by ID
 const updateProduct = async (req, res) => {
   try {
@@ -299,8 +293,6 @@ const updateProduct = async (req, res) => {
   }
 };
 
-
-
 // Controller to delete a product by ID
 const deleteProduct = async (req, res) => {
   try {
@@ -314,10 +306,6 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-
-
-
-
 module.exports = {
   getAllProducts,
   getProductById,
@@ -327,5 +315,5 @@ module.exports = {
   getMostRatedProductsByCategory,
   getSellerProducts,
   getProductsWithHighOffer,
-  getProductsByCategory
+  getProductsByCategory,
 };
