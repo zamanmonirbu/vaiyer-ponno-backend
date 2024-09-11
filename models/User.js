@@ -1,16 +1,5 @@
 const mongoose = require('mongoose');
 
-const locationSchema = new mongoose.Schema({
-    lat: {
-        type: Number,
-        required: false // You can adjust this based on your requirements
-    },
-    lng: {
-        type: Number,
-        required: false // You can adjust this based on your requirements
-    }
-});
-
 const userSchema = mongoose.Schema(
     {
         name: {
@@ -34,7 +23,11 @@ const userSchema = mongoose.Schema(
             default: null,
         },
         order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: [] }],
-        location: locationSchema // Embed the location schema here
+        location: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Location', // Reference to the Location model
+            default: null 
+        }
     },
     {
         timestamps: true,

@@ -16,6 +16,7 @@ const sellerRoutes = require('./routes/sellerRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const commentRoutes = require("./routes/commentRoutes");
 const offerBannerRoutes=require("./routes/offerBannerRoutes")
+const locationRoutes = require('./routes/locationRoutes');
 
 
 dotenv.config();
@@ -32,6 +33,7 @@ app.use(cors())
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/location', locationRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/seller', sellerRoutes);
 app.use('/api/orders', orderRoutes);

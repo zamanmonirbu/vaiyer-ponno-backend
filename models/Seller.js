@@ -41,6 +41,10 @@ const sellerSchema = new mongoose.Schema({
     ],
   },
   isSeller: { type: Boolean, default: true },
+  location: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Location', // Link to Location model
+  },
 },
 { timestamps: true });
 
