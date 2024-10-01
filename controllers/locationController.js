@@ -1,14 +1,14 @@
 const Location = require('../models/locationModel');
+const Seller = require('../models/Seller');
 const User = require('../models/User');
 
 const updateUserLocation = async (req, res) => {
     const { userId, sellerId, lat, lng, city, road, postalCode } = req.body;
-    console.log(userId, sellerId, lat, lng, city, road, postalCode);
+    // console.log(userId, sellerId, lat, lng, city, road, postalCode);
 
     try {
         let location;
 
-        // Check whether it's a seller or user request
         if (sellerId) {
             // Find location by sellerId
             location = await Location.findOne({ sellerId });
@@ -16,7 +16,7 @@ const updateUserLocation = async (req, res) => {
             // Find location by userId
             location = await Location.findOne({ userId });
         }
-
+// console.log(location)
         // If location exists, update it, otherwise create a new one
         if (location) {
             location.lat = lat;
@@ -62,8 +62,9 @@ const updateUserLocation = async (req, res) => {
 
 // Get user or seller location
 const getUserLocation = async (req, res) => {
-    const { userId, sellerId } = req.params; // Get userId or sellerId from params
+    const { userId, sellerId } = req.params; 
 
+    // console.log(userId, sellerId)
     try {
         let location;
 

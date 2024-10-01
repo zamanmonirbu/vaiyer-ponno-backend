@@ -5,7 +5,7 @@ const getUserProfile = async (req, res) => {
 
     try {
         // Find user by ID and exclude password from the result
-        const user = await User.findById(id).select('-password');
+        const user = await User.findById(id).select('-password').populate('location');
 
         if (user) {
             res.json(user);

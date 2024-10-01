@@ -25,7 +25,7 @@ const userSchema = mongoose.Schema(
         order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: [] }],
         location: { 
             type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Location', // Reference to the Location model
+            ref: 'Location', 
             default: null 
         }
     },

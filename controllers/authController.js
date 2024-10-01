@@ -32,7 +32,7 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).populate('location');
         if (!user) {
             return res.status(400).json({ message: 'User not found password' });
         }
@@ -48,7 +48,7 @@ const loginUser = async (req, res) => {
         res.status(200).json({ 
             message: 'Login successful', 
             token, 
-            user: { id: user._id, name: user.name, email: user.email,isAdmin:user.isAdmin,isSeller:user.isAdmin } 
+            user: { id: user._id, name: user.name, email: user.email,isAdmin:user.isAdmin,isSeller:user.isAdmin,location:user.location } 
         });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });

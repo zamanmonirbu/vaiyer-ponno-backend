@@ -104,7 +104,9 @@ exports.getSellerById = async (req, res) => {
     .populate('products') // Populate products
     .populate('category') // Populate categories
     .populate('subCategory') // Populate subcategories
-    .populate('order'); // Populate orders
+    .populate('order') // Populate orders
+    .populate('location'); // Populate location
+    
     if (!seller) {
       return res.status(404).json({ message: 'Seller not found' });
     }

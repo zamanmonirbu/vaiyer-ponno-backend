@@ -192,8 +192,9 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
-// Controller to create a new product
+
 const createProduct = async (req, res) => {
+  console.log(req.body);
   const {
     name,
     gender,
@@ -204,8 +205,11 @@ const createProduct = async (req, res) => {
     video,
     category,
     subCategory,
-    comments,
     offer,
+    area,
+    cities,
+    sellerLocation, // { lat, lng, city, road, postalCode }
+    quantity
   } = req.body;
   const sellerId = req.seller._id; // Assuming the seller ID is available in req.seller
 
@@ -222,8 +226,11 @@ const createProduct = async (req, res) => {
       video,
       category,
       subCategory,
-      comments,
       offer,
+      area, // Area in square meters
+      cities, // Cities array
+      sellerLocation, // { lat, lng, city, road, postalCode }
+      quantity, // Available stock quantity
     });
 
     // Save the new product
@@ -266,8 +273,6 @@ const createProduct = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
-// Controller to update a product by ID
 const updateProduct = async (req, res) => {
   try {
     // Ensure the seller ID is included in the update
@@ -292,6 +297,7 @@ const updateProduct = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
 
 // Controller to delete a product by ID
 const deleteProduct = async (req, res) => {
