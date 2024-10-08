@@ -28,6 +28,7 @@ const updateUserProfile = async (req, res) => {
           user.email = req.body.email || user.email;
           user.address = req.body.address || user.address;
           user.image = req.body.image || user.image;
+          user.mobile = req.body.mobile || user.mobile;
 
           // Update location if provided
           if (req.body.location) {
@@ -46,6 +47,7 @@ const updateUserProfile = async (req, res) => {
               address: updatedUser.address,
               image: updatedUser.image,
               location: updatedUser.location, // Include location in the response
+              location: updatedUser.mobile, // Include location in the response
           });
       } else {
           res.status(404).json({ message: 'User not found' });

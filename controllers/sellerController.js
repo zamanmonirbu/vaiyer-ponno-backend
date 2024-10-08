@@ -7,12 +7,20 @@ const Product = require('../models/Product');
 // Register a new seller
 exports.registerSeller = async (req, res) => {
   try {
-    const { name, email, password, address, mobile, img, products, star, about, video, accountNumbers, isSeller } = req.body;
+    const { name, email, password, address, mobile } = req.body;
 
     // Check if the seller already exists
     const existingSeller = await Seller.findOne({ email });
     if (existingSeller) {
       return res.status(400).json({ message: 'Seller already exists' });
+    }
+
+    // Password validation using regular expression
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message: 'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.'
+      });
     }
 
     // Hash the password before saving
@@ -24,13 +32,6 @@ exports.registerSeller = async (req, res) => {
       password: hashedPassword,
       address,
       mobile,
-      img,
-      products,
-      star,
-      about,
-      video,
-      accountNumbers,
-      isSeller,
     });
 
     await seller.save();

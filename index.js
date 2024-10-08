@@ -17,7 +17,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const commentRoutes = require("./routes/commentRoutes");
 const offerBannerRoutes=require("./routes/offerBannerRoutes")
 const locationRoutes = require('./routes/locationRoutes');
-
+const paymentRoutes=require('./routes/paymentRoutes.js')
 
 dotenv.config();
 
@@ -44,7 +44,7 @@ app.use("/api", categoryRoutes);
 app.use('/api', bannerRoutes);
 app.use("/api", commentRoutes);
 app.use("/api/offer/banners",offerBannerRoutes);
-
+app.use("/api", paymentRoutes);
 
 
 

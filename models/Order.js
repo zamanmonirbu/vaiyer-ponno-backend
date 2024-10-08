@@ -1,84 +1,29 @@
-const mongoose = require('mongoose');
+const mongoose=require('mongoose')
+const OrderSchema = new mongoose.Schema({
+    tran_id: { type: String, required: true, unique: true }, // Ensure it's unique
+    customerName: String,
+    transactionId: String,
+    customerEmail: String,
+    customerAddress: String,
+    customerMobile: String,
+    totalAmount: Number,
+    products: Array,
+    status: Boolean,
+    sellerIds: Array,
+    productIds: Array,
+    currency: String,
+    shipping_method: String,
+    cus_country: String,
+    ship_name: String,
+    ship_add1: String,
+    ship_add2: String,
+    ship_city: String,
+    ship_state: String,
+    ship_postcode: String,
+    ship_country: String,
+  });
+  
 
-const orderSchema = mongoose.Schema(
-    {
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            ref: 'User',
-        },
-        orderItems: [
-            {
-                name: { type: String, required: true },
-                qty: { type: Number, required: true },
-                image: { type: String, required: true },
-                price: { type: Number, required: true },
-                product: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    required: true,
-                    ref: 'Product',
-                },
-            },
-        ],
-        shippingAddress: {
-            address: { type: String, required: true },
-            city: { type: String, required: true },
-            postalCode: { type: String, required: true },
-            country: { type: String, required: true },
-        },
-        paymentMethod: {
-            type: String,
-            required: true,
-        },
-        paymentResult: {
-            id: { type: String },
-            status: { type: String },
-            update_time: { type: String },
-            email_address: { type: String },
-        },
-        itemsPrice: {
-            type: Number,
-            required: true,
-            default: 0.0,
-        },
-        taxPrice: {
-            type: Number,
-            required: true,
-            default: 0.0,
-        },
-        shippingPrice: {
-            type: Number,
-            required: true,
-            default: 0.0,
-        },
-        totalPrice: {
-            type: Number,
-            required: true,
-            default: 0.0,
-        },
-        isPaid: {
-            type: Boolean,
-            required: true,
-            default: false,
-        },
-        paidAt: {
-            type: Date,
-        },
-        isDelivered: {
-            type: Boolean,
-            required: true,
-            default: false,
-        },
-        deliveredAt: {
-            type: Date,
-        },
-    },
-    {
-        timestamps: true,
-    },
-    { timestamps: true }
-);
-
-const Order = mongoose.model('Order', orderSchema);
+const Order = mongoose.model('Order', OrderSchema);
 
 module.exports = Order;

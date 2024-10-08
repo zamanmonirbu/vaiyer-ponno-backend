@@ -3,7 +3,32 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 const registerUser = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, mobile, address } = req.body;
+
+    // Password strength validation using regular expression
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    // Validate the password
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({
+            message: 'Password must be at least 8 characters long, and include at least one uppercase letter, one lowercase letter, one number, and one special character.',
+        });
+    }
+
+    // Validate mobile number format (example: 10 digits)
+    const mobileRegex = /^\d{11}$/;
+    if (!mobileRegex.test(mobile)) {
+        return res.status(400).json({
+            message: 'Mobile number must be 11 digits long.',
+        });
+    }
+
+    // Validate address (optional: you can define your own validation logic)
+    if (!address || address.trim().length === 0) {
+        return res.status(400).json({
+            message: 'Address is required.',
+        });
+    }
 
     try {
         const existingUser = await User.findOne({ email });
@@ -12,21 +37,24 @@ const registerUser = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        // console.log(hashedPassword);
-        const newUser = new User({ name, email, password: hashedPassword });
+        const newUser = new User({ 
+            name, 
+            email, 
+            password: hashedPassword, 
+            mobile, 
+            address 
+        });
         await newUser.save();
-
-        const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '5h' });
 
         res.status(201).json({ 
             message: 'User registered successfully', 
-            token, 
-            user: { id: newUser._id, name: newUser.name, email: newUser.email } 
+            // user: { id: newUser._id, name: newUser.name, email: newUser.email, mobile: newUser.mobile, address: newUser.address } 
         });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;

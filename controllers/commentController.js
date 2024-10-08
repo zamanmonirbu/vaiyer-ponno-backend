@@ -1,8 +1,7 @@
 const Comment = require("../models/Comment");
 const Product = require("../models/Product");
-const User = require("../models/User");
+// const User = require("../models/User");
 
-// Controller to create a new comment
 const createComment = async (req, res) => {
   const { text, productId, rating } = req.body;
   const userId = req.user._id;
@@ -19,17 +18,34 @@ const createComment = async (req, res) => {
     // Save the new comment
     await newComment.save();
 
-    // Optionally, you can add the comment ID to the product's comments array
-    await Product.findByIdAndUpdate(
+    // Add the comment ID to the product's comments array
+    const product = await Product.findByIdAndUpdate(
       productId,
       { $push: { comment: newComment._id } },
       { new: true, runValidators: true }
     );
 
+    // Calculate the new average rating
+    const comments = await Comment.find({ product: productId });
+    const totalRatings = comments.reduce(
+      (acc, comment) => acc + comment.rating,
+      0
+    );
+    const averageRating = totalRatings / comments.length;
+    console.log(averageRating);
+
+    console.log("Rattings",product);
+    // Update the product's rating field with the new average rating
+    product.rating = averageRating;
+    const ratingUpdate = await product.save();
+    if (ratingUpdate) {
+      console.log(ratingUpdate);
+    } else {
+      console.log("error");
+    }
     res.status(201).json(newComment);
   } catch (error) {
-    // console.log(error);
-    res.status(400).json({ message: error.message });
+    res.status(400).json(error);
   }
 };
 

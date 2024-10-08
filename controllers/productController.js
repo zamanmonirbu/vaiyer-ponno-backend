@@ -4,6 +4,8 @@ const Product = require("../models/Product"); // Import the Product model
 const Seller = require("../models/Seller");
 const SubCategory = require("../models/SubCategory");
 
+
+
 const getAllProducts = async (req, res) => {
   try {
     // Fetch the latest 16 products, sorted by creation date
@@ -26,9 +28,6 @@ const getAllProducts = async (req, res) => {
         },
       })
       .populate("comment");
-
-    // Make sure you are logging the length of products returned
-    // console.log(`Fetched products count: ${products.length}`);
 
     res.status(200).json(products);
   } catch (error) {
@@ -187,14 +186,14 @@ const getProductsByCategory = async (req, res) => {
     // Respond with both products and subcategory details
     res.json({ products, subCategories });
   } catch (error) {
-    console.error("Error fetching category:", error);
+    // console.error("Error fetching category:", error);
     res.status(500).json({ message: "Server error, please try again later." });
   }
 };
 
 
 const createProduct = async (req, res) => {
-  console.log(req.body);
+
   const {
     name,
     gender,
@@ -208,17 +207,16 @@ const createProduct = async (req, res) => {
     offer,
     area,
     cities,
-    sellerLocation, // { lat, lng, city, road, postalCode }
+    sellerLocation, 
     quantity
   } = req.body;
-  const sellerId = req.seller._id; // Assuming the seller ID is available in req.seller
+  const sellerId = req.seller._id; 
 
   try {
-    // Create the new product
     const newProduct = new Product({
       name,
       gender,
-      seller: sellerId, // Link the product to the seller
+      seller: sellerId, 
       imageURL,
       subImages,
       unitPrice,
@@ -227,13 +225,11 @@ const createProduct = async (req, res) => {
       category,
       subCategory,
       offer,
-      area, // Area in square meters
-      cities, // Cities array
-      sellerLocation, // { lat, lng, city, road, postalCode }
-      quantity, // Available stock quantity
+      area, 
+      cities, 
+      sellerLocation, 
+      quantity, 
     });
-
-    // Save the new product
     await newProduct.save();
 
     // Update the seller's products and categories list
@@ -273,23 +269,82 @@ const createProduct = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+
 const updateProduct = async (req, res) => {
   try {
-    // Ensure the seller ID is included in the update
-    req.body.seller = req.seller._id;
+    const {
+      name,
+      gender,
+      imageURL,
+      subImages,
+      unitPrice,
+      description,
+      video,
+      category,
+      subCategory,
+      offer,
+      area,
+      cities,
+      sellerLocation,
+      quantity,
+    } = req.body;
 
     const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
+      req.params.id,   
+      {
+        name,
+        gender,
+        imageURL,
+        subImages,
+        unitPrice,
+        description,
+        video,
+        category,
+        subCategory,
+        offer,
+        area,
+        cities,
+        sellerLocation,
+        quantity
+      },
       { new: true, runValidators: true }
-    )
-      .populate("seller")
-      .populate("category")
-      .populate("subCategory")
-      .populate("comments");
+    ).populate("seller")
+    .populate("category")
+    .populate("subCategory")
 
+   
     if (!updatedProduct) {
       return res.status(404).json({ message: "Product not found" });
+    }
+
+    const sellerId = req.body.seller._id;
+    await Seller.findByIdAndUpdate(
+      sellerId,
+      {
+        $addToSet: { category: updatedProduct.category, subCategory: updatedProduct.subCategory },
+      },
+      { new: true, runValidators: true }
+    );
+
+    // Update the category's products and sellers list if the category has changed
+    await Category.findByIdAndUpdate(
+      updatedProduct.category,
+      {
+        $addToSet: { sellers: sellerId },
+      },
+      { new: true, runValidators: true }
+    );
+
+    // Update the sub-category's products list if the sub-category has changed
+    if (updatedProduct.subCategory) {
+      await SubCategory.findByIdAndUpdate(
+        updatedProduct.subCategory,
+        {
+          $addToSet: { category: updatedProduct.category },
+        },
+        { new: true, runValidators: true }
+      );
     }
 
     res.status(200).json(updatedProduct);
@@ -297,6 +352,7 @@ const updateProduct = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
 
 
 // Controller to delete a product by ID
@@ -311,6 +367,9 @@ const deleteProduct = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
 
 module.exports = {
   getAllProducts,
