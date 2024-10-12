@@ -4,8 +4,6 @@ const Product = require("../models/Product"); // Import the Product model
 const Seller = require("../models/Seller");
 const SubCategory = require("../models/SubCategory");
 
-
-
 const getAllProducts = async (req, res) => {
   try {
     // Fetch the latest 16 products, sorted by creation date
@@ -176,11 +174,9 @@ const getProductsByCategory = async (req, res) => {
     const subCategories = category.subCategories;
 
     if (products.length === 0 && subCategories.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "No products or subcategories found in this category.",
-        });
+      return res.status(404).json({
+        message: "No products or subcategories found in this category.",
+      });
     }
 
     // Respond with both products and subcategory details
@@ -191,9 +187,47 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
+const getSuggestedProducts = async (req, res) => {
+  const { productId } = req.params;
+  try {
+    const product = await Product.findById(productId).populate("subCategory");
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    const subCategoryId = product.subCategory._id;
+    const suggestedProducts = await Product.find({
+      subCategory: subCategoryId,
+      _id: { $ne: productId },
+    }).limit(10); // Limit to 10 products
+
+    res.json(suggestedProducts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const searchProducts = async (req, res) => {
+  const query = req.query.q; // Get the search query from the request
+  try {
+    // Split the query into words and create a regex pattern for each word
+    const words = query.split(/\s+/).filter((word) => word); // Split by whitespace and filter out empty strings
+
+    // Build the query using $or to match each word in the name or description
+    const products = await Product.find({
+      $or: words.map((word) => ({
+        $or: [
+          { name: { $regex: new RegExp(word, "i") } }, // Match any of the words in name
+          { description: { $regex: new RegExp(word, "i") } }, // Match any of the words in description
+        ],
+      })),
+    });
+
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error });
+  }
+};
 
 const createProduct = async (req, res) => {
-
   const {
     name,
     gender,
@@ -207,16 +241,16 @@ const createProduct = async (req, res) => {
     offer,
     area,
     cities,
-    sellerLocation, 
-    quantity
+    sellerLocation,
+    quantity,
   } = req.body;
-  const sellerId = req.seller._id; 
+  const sellerId = req.seller._id;
 
   try {
     const newProduct = new Product({
       name,
       gender,
-      seller: sellerId, 
+      seller: sellerId,
       imageURL,
       subImages,
       unitPrice,
@@ -225,10 +259,10 @@ const createProduct = async (req, res) => {
       category,
       subCategory,
       offer,
-      area, 
-      cities, 
-      sellerLocation, 
-      quantity, 
+      area,
+      cities,
+      sellerLocation,
+      quantity,
     });
     await newProduct.save();
 
@@ -270,7 +304,6 @@ const createProduct = async (req, res) => {
   }
 };
 
-
 const updateProduct = async (req, res) => {
   try {
     const {
@@ -291,7 +324,7 @@ const updateProduct = async (req, res) => {
     } = req.body;
 
     const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,   
+      req.params.id,
       {
         name,
         gender,
@@ -306,14 +339,14 @@ const updateProduct = async (req, res) => {
         area,
         cities,
         sellerLocation,
-        quantity
+        quantity,
       },
       { new: true, runValidators: true }
-    ).populate("seller")
-    .populate("category")
-    .populate("subCategory")
+    )
+      .populate("seller")
+      .populate("category")
+      .populate("subCategory");
 
-   
     if (!updatedProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -322,7 +355,10 @@ const updateProduct = async (req, res) => {
     await Seller.findByIdAndUpdate(
       sellerId,
       {
-        $addToSet: { category: updatedProduct.category, subCategory: updatedProduct.subCategory },
+        $addToSet: {
+          category: updatedProduct.category,
+          subCategory: updatedProduct.subCategory,
+        },
       },
       { new: true, runValidators: true }
     );
@@ -353,8 +389,6 @@ const updateProduct = async (req, res) => {
   }
 };
 
-
-
 // Controller to delete a product by ID
 const deleteProduct = async (req, res) => {
   try {
@@ -368,9 +402,6 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-
-
-
 module.exports = {
   getAllProducts,
   getProductById,
@@ -381,4 +412,6 @@ module.exports = {
   getSellerProducts,
   getProductsWithHighOffer,
   getProductsByCategory,
+  getSuggestedProducts,
+  searchProducts,
 };

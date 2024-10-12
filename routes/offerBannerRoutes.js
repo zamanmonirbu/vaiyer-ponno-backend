@@ -9,9 +9,9 @@ const {
 } = require("../controllers/offerBannerController");
 
 // Define routes and map them to controller functions
-router.route("/").get(getOfferBanners).post(createOfferBanner);
+router.route("/offer/banners/").get(getOfferBanners).post(createOfferBanner);
 router
-  .route("/:id")
+  .route("/offer/banners/:id")
   .get(getOfferBannerById)
   .put(updateOfferBanner)
   .delete(deleteOfferBanner);

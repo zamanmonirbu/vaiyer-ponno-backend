@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors=require('cors');
+const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -27,7 +28,9 @@ connectDB();
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors())
+
 
 // Routes
 app.use('/api/notifications', notificationRoutes);
@@ -43,9 +46,8 @@ app.use('/api', passwordRecoveryRoutes);
 app.use("/api", categoryRoutes);
 app.use('/api', bannerRoutes);
 app.use("/api", commentRoutes);
-app.use("/api/offer/banners",offerBannerRoutes);
+app.use("/api",offerBannerRoutes);
 app.use("/api", paymentRoutes);
-
 
 
 

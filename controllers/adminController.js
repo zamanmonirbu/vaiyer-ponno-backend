@@ -2,49 +2,48 @@ const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-// Login Admin
-exports.loginAdmin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    // Find admin by email
-    const admin = await Admin.findOne({ email });
 
+
+// Get Admin by ID
+exports.getAdminById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const admin = await Admin.findById(id).select('-password'); // Exclude password
     if (!admin) {
       return res.status(404).json({ error: 'Admin not found' });
     }
 
-    // Compare passwords
-    // const isMatch = await admin.comparePassword(password);
-    const isMatch = await bcrypt.compare(password, admin.password);
-
-    if (!isMatch || !admin.isAdmin) {
-      return res.status(400).json({ error: 'Invalid credentials' });
-    }
-
-    // Create a token
-    const token = jwt.sign(
-      { id: admin._id, email: admin.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '12h' }
-    );
-
-    res.json({
-      message: 'Login successful',
-      token,
-      admin: {
-        id: admin._id,
-        name: admin.name,
-        email: admin.email,
-        isAdmin:admin.isAdmin
-      }
-    });
+    res.json(admin);
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
   }
 };
 
 
+//All admins
+exports.getAdmins = async (req, res) => {
+  try {
+    const admins = await Admin.find({ isAdmin: true });
+    res.json(admins);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+//Requested admins
+exports.requestAdmins = async (req, res) => {
+  try {
+    const admins = await Admin.find({ isAdmin: false }).select('-password');
+    console.log(admins);
+    res.json(admins);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // Register Admin
 exports.registerAdmin = async (req, res) => {
@@ -77,24 +76,49 @@ exports.registerAdmin = async (req, res) => {
   }
 };
 
-
-exports.getAdmins = async (req, res) => {
+// Login Admin
+exports.loginAdmin = async (req, res) => {
   try {
-    const admins = await Admin.find({ isAdmin: true });
-    res.json(admins);
+    const { email, password } = req.body;
+    
+    // Find admin by email
+    const admin = await Admin.findOne({ email });
+
+    if (!admin) {
+      return res.status(404).json({ error: 'Admin not found' });
+    }
+
+    // Compare passwords
+    // const isMatch = await admin.comparePassword(password);
+    const isMatch = await bcrypt.compare(password, admin.password);
+
+    if (!isMatch || !admin.isAdmin) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    // Create a token
+    const token = jwt.sign(
+      { id: admin._id, email: admin.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Login successful',
+      token,
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        isAdmin:admin.isAdmin
+      }
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
-exports.requestAdmins = async (req, res) => {
-  try {
-    const admins = await Admin.find({ isAdmin: false }).select('-password');
-    res.json(admins);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+
 
 exports.updateAdmin = async (req, res) => {
   const { name, email, password,isAdmin } = req.body;

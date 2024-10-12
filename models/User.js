@@ -26,7 +26,8 @@ const userSchema = mongoose.Schema(
             type: String,
             default: null,
         },
-        order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: [] }],
+        // order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: [] }],
+        order: [{ type: String }],
         location: { 
             type: mongoose.Schema.Types.ObjectId, 
             ref: 'Location', 

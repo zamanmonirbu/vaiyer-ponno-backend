@@ -1,5 +1,6 @@
-const mongoose=require('mongoose')
-const OrderSchema = new mongoose.Schema({
+const mongoose = require("mongoose");
+const OrderSchema = new mongoose.Schema(
+  {
     tran_id: { type: String, required: true, unique: true }, // Ensure it's unique
     customerName: String,
     transactionId: String,
@@ -21,9 +22,10 @@ const OrderSchema = new mongoose.Schema({
     ship_state: String,
     ship_postcode: String,
     ship_country: String,
-  });
-  
+  },
+  { timestamps: true }
+);
 
-const Order = mongoose.model('Order', OrderSchema);
+const Order = mongoose.model("Order", OrderSchema);
 
 module.exports = Order;

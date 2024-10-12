@@ -12,8 +12,8 @@ const productSchema = new mongoose.Schema({
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     subCategory: { type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory', required: false },
     rating: { type: Number, default: 0 },
-    order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
-    // order: [{ type: String }],
+    // order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
+    order: [{ type: String }],
     comment: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
     offer: { type: Number, required: true },
     area: { type: Number, required: true }, // Area in square meters

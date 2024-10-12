@@ -1,60 +1,44 @@
-const Order = require('../models/Order');
+// controllers/orderController.js
 
-const addOrderItems = async (req, res) => {
-    const { orderItems, shippingAddress, paymentMethod, itemsPrice, taxPrice, shippingPrice, totalPrice } = req.body;
-
-    if (orderItems && orderItems.length === 0) {
-        res.status(400).json({ message: 'No order items' });
-    } else {
-        const order = new Order({
-            user: req.user._id,
-            orderItems,
-            shippingAddress,
-            paymentMethod,
-            itemsPrice,
-            taxPrice,
-            shippingPrice,
-            totalPrice,
-        });
-
-        const createdOrder = await order.save();
-        res.status(201).json(createdOrder);
+const Order = require("../models/Order");
+const User = require("../models/User");
+// Fetch orders by user ID
+const getOrdersByUserId = async (req, res) => {
+    try {
+      const userId = req.params.userId;
+    //   console.log(userId);
+  
+      // Find user by userId
+      const user = await User.findById(userId); // No need to use .populate("order") since order is now a string array
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      // Fetch orders using the order IDs from the user's order array
+      const userOrders = await Order.find({ _id: { $in: user.order } }); // Assuming the order's transaction ID is a string
+      res.status(200).json(userOrders);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user orders", error });
     }
-};
-
-const getOrderById = async (req, res) => {
-    const order = await Order.findById(req.params.id).populate('user', 'name email');
-
-    if (order) {
-        res.json(order);
-    } else {
-        res.status(404).json({ message: 'Order not found' });
+  };
+  
+// Fetch orders by seller ID
+const getOrdersBySellerId = async (req, res) => {
+  try {
+    const sellerId = req.params.sellerId;
+    const sellerOrders = await Order.find({ sellerIds: sellerId });
+    if (sellerOrders.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No orders found for this seller" });
     }
+    res.status(200).json(sellerOrders);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch seller orders", error });
+  }
 };
 
-const updateOrderToPaid = async (req, res) => {
-    const order = await Order.findById(req.params.id);
-
-    if (order) {
-        order.isPaid = true;
-        order.paidAt = Date.now();
-        order.paymentResult = {
-            id: req.body.id,
-            status: req.body.status,
-            update_time: req.body.update_time,
-            email_address: req.body.email_address,
-        };
-
-        const updatedOrder = await order.save();
-        res.json(updatedOrder);
-    } else {
-        res.status(404).json({ message: 'Order not found' });
-    }
+module.exports = {
+  getOrdersByUserId,
+  getOrdersBySellerId, // Export new seller order controller
 };
-
-const getMyOrders = async (req, res) => {
-    const orders = await Order.find({ user: req.user._id });
-    res.json(orders);
-};
-
-module.exports = { addOrderItems, getOrderById, updateOrderToPaid, getMyOrders };

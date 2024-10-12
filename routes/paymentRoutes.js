@@ -4,6 +4,8 @@ const { v4: uuidv4 } = require("uuid"); // Import UUID library
 const router = express.Router();
 const Order = require("../models/Order");
 const Product = require("../models/Product");
+const User = require("../models/User");
+
 
 const store_id = process.env.Store_ID;
 const store_passwd = process.env.Store_Password;
@@ -12,6 +14,7 @@ const is_live = false;
 router.post("/payment", async (req, res) => {
   const uId = uuidv4();
   const {
+    customerId,
     customerName,
     customerAddress,
     customerEmail,
@@ -46,6 +49,7 @@ router.post("/payment", async (req, res) => {
     product_name: "Product Purchase", // Customize product name as needed
     product_category: "General",
     product_profile: "general",
+    cusId:customerId,
     cus_name: customerName,
     cus_email: customerEmail,
     cus_add1: customerAddress,
@@ -56,7 +60,7 @@ router.post("/payment", async (req, res) => {
     cus_country: defaultCountry,
     cus_phone: customerMobile || "N/A",
     cus_fax: customerMobile || "N/A",
-    ship_name: customerName, // Reuse customer info for shipping
+    ship_name: customerName, 
     ship_add1: customerAddress,
     ship_add2: defaultCity,
     ship_city: defaultCity,
@@ -95,9 +99,11 @@ router.post("/payment", async (req, res) => {
           ship_state: data.ship_state,
           ship_postcode: data.ship_postcode,
           ship_country: data.ship_country,
+          customerId:data.cusId,
         });
 
         await newOrder.save();
+
 
         // Redirect to payment gateway
         res.json({ GatewayPageURL });
@@ -113,49 +119,59 @@ router.post("/payment", async (req, res) => {
   }
 
   // Success route
-  router.post("/payment/success/:id", async (req, res) => {
-    const { id } = req.params;  // This `id` is the `tran_id`, not the `_id`
-    
-    try {
-      // Update the order status
-      const result = await Order.updateOne(
-        { tran_id: id },  // Use `tran_id` for the Order model
-        {
-          $set: {
-            status: true,
-          },
-        }
-      );
-  
-      if (result.modifiedCount > 0) {
-        // Assuming that the Product schema also has a `tran_id` or related field
-        // const productUpdate = await Product.updateOne(
-        //   { _id: productIds[0] },  // Ensure you're using the correct field in Product schema
-        //   {
-        //     $push: {
-        //       order: id,  // Add the `tran_id` to the `order` field in Product
-        //     },
-        //   }
-        // );
-  
-        // if (productUpdate.modifiedCount > 0) {
-        //   // Redirect after successful product update
-          res.redirect(`http://localhost:5173/payment/success/${id}`);
-        // } else {
-        //   res.status(404).json({ error: "Product not found or already updated" });
-        // }
-      } else {
-        res.status(404).json({ error: "Order not found or already updated" });
+router.post("/payment/success/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Update the order status
+    const result = await Order.updateOne(
+      { tran_id: id },
+      {
+        $set: {
+          status: true,
+        },
       }
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      res.status(500).json({
-        error: "Failed to update order status or product",
-        details: error.message,
-      });
+    );
+
+    const orderData= await Order.findOne({ tran_id: id });
+
+    // console.log("ORder ID", orderData)
+
+    if (result.modifiedCount > 0) {
+      // Update products to push order ID into the order array
+      const productUpdate = await Product.updateMany(
+        { _id: { $in: productIds } }, // Match all product IDs in the productIds array
+        { $push: { order: orderData._id } }      // Push the order ID to the order array
+      );
+
+      if (productUpdate.modifiedCount > 0) {
+        // Update the user to push the order ID into the user's order array
+        const userUpdate = await User.updateOne(
+          { _id: customerId },           // Match the user by their ID
+          { $push: { order:  orderData._id } }    // Push the order ID to the user's order array
+        );
+
+        if (userUpdate.modifiedCount > 0) {
+          // Redirect to success page if all updates are successful
+          res.redirect(`http://localhost:5173/payment/success/${id}`);
+        } else {
+          res.status(404).json({ error: "User not found or already updated" });
+        }
+      } else {
+        res.status(404).json({ error: "Product not found or already updated" });
+      }
+    } else {
+      res.status(404).json({ error: "Order not found or already updated" });
     }
-  });
-  
+  } catch (error) {
+    console.error("Error updating order status or product/user:", error);
+    res.status(500).json({
+      error: "Failed to update order status, product, or user",
+      details: error.message,
+    });
+  }
+});
+
 
   //   Cancel route
   router.post("/payment/cancel/:id", async (req, res) => {

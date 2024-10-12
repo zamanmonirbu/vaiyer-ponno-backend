@@ -1,11 +1,14 @@
-const express = require('express');
-const { addOrderItems, getOrderById, updateOrderToPaid, getMyOrders } = require('../controllers/orderController');
-const { userAuth } = require('../middleware/authMiddleware');
+const express = require("express");
+const {
+  getOrdersByUserId,
+  getOrdersBySellerId,
+} = require("../controllers/orderController");
 const router = express.Router();
 
-router.route('/').post(userAuth, addOrderItems);
-router.route('/myorders').get(userAuth, getMyOrders);
-router.route('/:id').get(userAuth, getOrderById);
-router.route('/:id/pay').put(userAuth, updateOrderToPaid);
+// Route to get orders by user ID
+router.get("/user/:userId", getOrdersByUserId);
+
+// Route to get orders by seller ID
+router.get("/seller/:sellerId", getOrdersBySellerId);
 
 module.exports = router;

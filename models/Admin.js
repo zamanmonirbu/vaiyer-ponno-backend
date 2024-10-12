@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 
 // Define the schema for Admin
 const adminSchema = new mongoose.Schema(
@@ -7,7 +6,10 @@ const adminSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    img: { type: String },
+    img: { 
+      type: String, 
+      default: "https://cdn-icons-png.flaticon.com/512/560/560199.png"  
+    },
     isAdmin: { type: Boolean, default: false },
   },
   { timestamps: true }
