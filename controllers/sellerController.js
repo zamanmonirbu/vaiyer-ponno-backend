@@ -4,78 +4,6 @@ const bcrypt = require('bcryptjs');
 const Product = require('../models/Product');
 
 
-// Register a new seller
-exports.registerSeller = async (req, res) => {
-  try {
-    const { name, email, password, address, mobile } = req.body;
-
-    // Check if the seller already exists
-    const existingSeller = await Seller.findOne({ email });
-    if (existingSeller) {
-      return res.status(400).json({ message: 'Seller already exists' });
-    }
-
-    // Password validation using regular expression
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        message: 'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.'
-      });
-    }
-
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const seller = new Seller({
-      name,
-      email,
-      password: hashedPassword,
-      address,
-      mobile,
-    });
-
-    await seller.save();
-    res.status(201).json({ message: 'Seller registered successfully' });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
-// Login a seller
-exports.loginSeller = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Find the seller by email
-    const seller = await Seller.findOne({ email });
-    if (!seller) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    // Compare the provided password with the stored hashed password
-    const isMatch = await bcrypt.compare(password, seller.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-
-    // Generate a JWT token
-    const token = jwt.sign({ id: seller._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-    res.status(200).json({
-      token,
-      seller: {
-        id: seller._id,
-        name: seller.name,
-        email: seller.email,
-        isSeller: seller.isSeller,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-
 // Get all sellers
 exports.getSellers = async (req, res) => {
   try {
@@ -162,6 +90,85 @@ exports.deleteSeller = async (req, res) => {
       return res.status(404).json({ message: 'Seller not found' });
     }
     res.status(200).json({ message: 'Seller deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+// Register a new seller
+exports.registerSeller = async (req, res) => {
+  try {
+    const { name, email, password, address, mobile } = req.body;
+
+    // Check if the seller already exists
+    const existingSeller = await Seller.findOne({ email });
+    if (existingSeller) {
+      return res.status(400).json({ message: 'Seller already exists' });
+    }
+
+    // Password validation using regular expression
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message: 'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character.'
+      });
+    }
+
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const seller = new Seller({
+      name,
+      email,
+      password: hashedPassword,
+      address,
+      mobile,
+    });
+
+    await seller.save();
+    res.status(201).json({ message: 'Seller registered successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+
+// Login a seller
+exports.loginSeller = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find the seller by email
+    const seller = await Seller.findOne({ email });
+    if (!seller) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Compare the provided password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, seller.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Check if the account is active
+    if (!seller.isSeller) {
+      return res.status(403).json({ error: "Your account is restricted" });
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign({ id: seller._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    res.status(200).json({
+      token,
+      seller: {
+        id: seller._id,
+        name: seller.name,
+        email: seller.email,
+        isSeller: seller.isSeller,
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -10,52 +10,53 @@ const getUserProfile = async (req, res) => {
         if (user) {
             res.json(user);
         } else {
-            res.status(404).json({ message: 'User not found' });
+            res.status(404).json({ success: false, message: 'User not found' });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
+
 const updateUserProfile = async (req, res) => {
-  const { id } = req.params; // Get the user ID from the request params
+    const { id } = req.params; // Get the user ID from the request params
 
-  try {
-      const user = await User.findById(id); // Find the user by ID
+    try {
+        const user = await User.findById(id); // Find the user by ID
 
-      if (user) {
-          // Update the user's profile fields if provided, otherwise keep the current values
-          user.name = req.body.name || user.name;
-          user.email = req.body.email || user.email;
-          user.address = req.body.address || user.address;
-          user.image = req.body.image || user.image;
-          user.mobile = req.body.mobile || user.mobile;
+        if (user) {
+            // Update the user's profile fields if provided, otherwise keep the current values
+            user.name = req.body.name || user.name;
+            user.email = req.body.email || user.email;
+            user.address = req.body.address || user.address;
+            user.img = req.body.img || user.img;
+            user.mobile = req.body.mobile || user.mobile;
 
-          // Update location if provided
-          if (req.body.location) {
-              user.location.lat = req.body.location.lat || user.location.lat;
-              user.location.lng = req.body.location.lng || user.location.lng;
-          }
+            // Update location if provided
+            if (req.body.location) {
+                user.location.lat = req.body.location.lat || user.location.lat;
+                user.location.lng = req.body.location.lng || user.location.lng;
+            }
 
-          // Save the updated user
-          const updatedUser = await user.save();
+            // Save the updated user
+            const updatedUser = await user.save();
 
-          // Return the updated user profile (without password)
-          res.json({
-              _id: updatedUser._id,
-              name: updatedUser.name,
-              email: updatedUser.email,
-              address: updatedUser.address,
-              image: updatedUser.image,
-              location: updatedUser.location, // Include location in the response
-              location: updatedUser.mobile, // Include location in the response
-          });
-      } else {
-          res.status(404).json({ message: 'User not found' });
-      }
-  } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
-  }
+            // Return the updated user profile (without password)
+            res.json({
+                success: true,
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                address: updatedUser.address,
+                img: updatedUser.img,
+                location: updatedUser.location, // Include location in the response
+                mobile: updatedUser.mobile,     // Include mobile in the response
+            });
+        } else {
+            res.status(404).json({ success: false, message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
 };
-
 
 module.exports = { getUserProfile, updateUserProfile };

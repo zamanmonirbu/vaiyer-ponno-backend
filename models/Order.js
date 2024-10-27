@@ -22,6 +22,7 @@ const OrderSchema = new mongoose.Schema(
     ship_state: String,
     ship_postcode: String,
     ship_country: String,
+    
   },
   { timestamps: true }
 );

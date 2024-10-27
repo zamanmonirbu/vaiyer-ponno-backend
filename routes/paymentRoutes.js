@@ -1,3 +1,5 @@
+
+
 const express = require("express");
 const SSLCommerzPayment = require("sslcommerz-lts");
 const { v4: uuidv4 } = require("uuid"); // Import UUID library
@@ -5,7 +7,9 @@ const router = express.Router();
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const User = require("../models/User");
+const dotenv = require("dotenv");
 
+dotenv.config();
 
 const store_id = process.env.Store_ID;
 const store_passwd = process.env.Store_Password;
@@ -135,30 +139,39 @@ router.post("/payment/success/:id", async (req, res) => {
 
     const orderData= await Order.findOne({ tran_id: id });
 
+    console.log(orderData)
+
     // console.log("ORder ID", orderData)
 
     if (result.modifiedCount > 0) {
-      // Update products to push order ID into the order array
-      const productUpdate = await Product.updateMany(
-        { _id: { $in: productIds } }, // Match all product IDs in the productIds array
-        { $push: { order: orderData._id } }      // Push the order ID to the order array
+      // Update each product individually
+      for (let product of orderData.products) {
+        // Ensure qty is a valid number, otherwise default to 0
+        const qty = product.qty && !isNaN(product.qty) ? product.qty : 0;
+
+        if (qty > 0) {
+          await Product.updateOne(
+            { _id: product.productId },
+            {
+              $push: { order: orderData._id },
+              $inc: { quantity: -qty }
+            }
+          );
+        } else {
+          console.error(`Invalid quantity for product ${product.productId}`);
+        }
+      }
+
+      // Update the user to push the order ID into the user's order array
+      const userUpdate = await User.updateOne(
+        { _id: orderData.customerId },
+        { $push: { order: orderData._id } }
       );
 
-      if (productUpdate.modifiedCount > 0) {
-        // Update the user to push the order ID into the user's order array
-        const userUpdate = await User.updateOne(
-          { _id: customerId },           // Match the user by their ID
-          { $push: { order:  orderData._id } }    // Push the order ID to the user's order array
-        );
-
-        if (userUpdate.modifiedCount > 0) {
-          // Redirect to success page if all updates are successful
-          res.redirect(`http://localhost:5173/payment/success/${id}`);
-        } else {
-          res.status(404).json({ error: "User not found or already updated" });
-        }
+      if (userUpdate.modifiedCount > 0) {
+        res.redirect(`http://localhost:5173/payment/success/${id}`);
       } else {
-        res.status(404).json({ error: "Product not found or already updated" });
+        res.status(404).json({ error: "User not found or already updated" });
       }
     } else {
       res.status(404).json({ error: "Order not found or already updated" });
