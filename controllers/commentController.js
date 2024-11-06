@@ -53,7 +53,7 @@ const createComment = async (req, res) => {
 const getCommentsByProduct = async (req, res) => {
   try {
     const comments = await Comment.find({ product: req.params.productId })
-      .populate("author", "name") // Populate the author's name or other details
+      .populate("author", "firstName") // Populate the author's name or other details
       .sort({ createdAt: -1 }); // Sort by most recent
 
     res.status(200).json(comments);

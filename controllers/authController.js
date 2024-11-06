@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const registerUser = async (req, res) => {
-  const { name, email, password, mobile, address } = req.body;
+  const { firstName, lastName, email, password, mobile, address } = req.body;
 
   // Password strength validation using regular expression
   const passwordRegex =
@@ -17,7 +17,7 @@ const registerUser = async (req, res) => {
     });
   }
 
-  // Validate mobile number format (example: 10 digits)
+  // Validate mobile number format (example: 11 digits)
   const mobileRegex = /^\d{11}$/;
   if (!mobileRegex.test(mobile)) {
     return res.status(400).json({
@@ -40,18 +40,21 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
-      name,
+      firstName,  // Updated to firstName
+      lastName,   // Updated to lastName
       email,
       password: hashedPassword,
       mobile,
       address,
     });
+    
     await newUser.save();
 
     res.status(201).json({
       message: "User registered successfully",
     });
   } catch (error) {
+    console.error(error); // Log the error for debugging
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -88,7 +91,7 @@ const loginUser = async (req, res) => {
     // Send refresh token in a secure HTTP-only cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true, // Set to true in production (HTTPS)
+      secure: process.env.NODE_ENV === "production", // Set to true in production (HTTPS)
       sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
@@ -99,14 +102,18 @@ const loginUser = async (req, res) => {
       token: accessToken,
       user: {
         id: user._id,
-        name: user.name,
+        firstName: user.firstName, // Changed to firstName
+        lastName: user.lastName, // Added lastName
         email: user.email,
+        mobile: user.mobile, // Added mobile
+        address: user.address, // Added address
         isAdmin: user.isAdmin,
         isSeller: user.isSeller,
         location: user.location,
       },
     });
   } catch (error) {
+    console.error(error); // Log the error for debugging
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -128,9 +135,8 @@ const refreshToken = (req, res) => {
 
     return res.status(200).json({ token: newAccessToken });
   } catch (error) {
-    return res
-      .status(403)
-      .json({ message: "Invalid or expired refresh token" });
+    console.error(error); // Log the error for debugging
+    return res.status(403).json({ message: "Invalid or expired refresh token" });
   }
 };
 

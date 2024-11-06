@@ -25,7 +25,8 @@ const updateUserProfile = async (req, res) => {
 
         if (user) {
             // Update the user's profile fields if provided, otherwise keep the current values
-            user.name = req.body.name || user.name;
+            user.firstName = req.body.firstName || user.firstName; // Updated to firstName
+            user.lastName = req.body.lastName || user.lastName;   // Updated to lastName
             user.email = req.body.email || user.email;
             user.address = req.body.address || user.address;
             user.img = req.body.img || user.img;
@@ -44,7 +45,8 @@ const updateUserProfile = async (req, res) => {
             res.json({
                 success: true,
                 _id: updatedUser._id,
-                name: updatedUser.name,
+                firstName: updatedUser.firstName, // Updated to firstName
+                lastName: updatedUser.lastName,     // Updated to lastName
                 email: updatedUser.email,
                 address: updatedUser.address,
                 img: updatedUser.img,

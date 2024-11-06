@@ -16,6 +16,7 @@ router.get('/:id', productController.getProductById);
 router.get("/category/:categoryName", productController.getProductsByCategory);
 
 router.get("/suggested/:productId", productController.getSuggestedProducts);
+router.post("/suggest/best", productController.suggestProducts);
 
 
 

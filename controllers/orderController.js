@@ -3,20 +3,18 @@
 const Order = require("../models/Order");
 const User = require("../models/User");
 // Fetch orders by user ID
+// Fetch orders by user ID
 const getOrdersByUserId = async (req, res) => {
   try {
     const userId = req.params.userId;
-    //   console.log(userId);
-
-    // Find user by userId
-    const user = await User.findById(userId); // No need to use .populate("order") since order is now a string array
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Fetch orders using the order IDs from the user's order array
-    const userOrders = await Order.find({ _id: { $in: user.order } }); // Assuming the order's transaction ID is a string
-    // console.log(userOrders)
+    // Fetch orders using the order IDs from the user's order array, sorted by creation date (descending)
+    const userOrders = await Order.find({ _id: { $in: user.order } })
+      .sort({ createdAt: -1 }); // Change 'createdAt' to the appropriate field for sorting
     res.status(200).json(userOrders);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch user orders", error });
@@ -27,7 +25,8 @@ const getOrdersByUserId = async (req, res) => {
 const getOrdersBySellerId = async (req, res) => {
   try {
     const sellerId = req.params.sellerId;
-    const sellerOrders = await Order.find({ sellerIds: sellerId });
+    const sellerOrders = await Order.find({ sellerIds: sellerId })
+      .sort({ createdAt: -1 }); // Change 'createdAt' to the appropriate field for sorting
     if (sellerOrders.length === 0) {
       return res
         .status(404)
@@ -38,6 +37,7 @@ const getOrdersBySellerId = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch seller orders", error });
   }
 };
+
 // Fetch orders by seller ID
 const getOrderByOrderId = async (req, res) => {
   try {

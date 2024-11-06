@@ -1,8 +1,10 @@
 const Category = require("../models/Category");
-// const Comment = require("../models/Comment");
-const Product = require("../models/Product"); // Import the Product model
+const Product = require("../models/Product");
 const Seller = require("../models/Seller");
 const SubCategory = require("../models/SubCategory");
+const axios = require("axios");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const getAllProducts = async (req, res) => {
   try {
@@ -56,20 +58,8 @@ const getProductById = async (req, res) => {
 const getSellerProducts = async (req, res) => {
   try {
     const sellerId = req.seller._id; // Assuming the seller ID is available in req.seller
-    const products = await Product.find({ seller: sellerId })
-      .populate("seller")
-      .populate({
-        path: "category",
-        populate: {
-          path: "subCategories", // Assuming you want to populate the 'subCategories' field within 'category'
-        },
-      })
-      .populate({
-        path: "subCategory",
-        populate: {
-          path: "category", // If subCategory has a reference back to the 'category'
-        },
-      });
+    const products = await Product.find({ seller: sellerId });
+
     res.json(products);
   } catch (error) {
     // console.log(error.message);
@@ -402,6 +392,48 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const suggestProducts = async (req, res) => {
+  const { userRequirements } = req.body;
+  const existingProducts = await Product.find();
+
+  // Convert existingProducts to JSON string
+  const existingProductsJson = JSON.stringify(existingProducts);
+
+  const dataToSend = {
+    contents: [
+      {
+        parts: [
+          {
+            text: userRequirements,
+          },
+          {
+            text: existingProductsJson, // Send existingProducts as JSON string
+          },
+        ],
+      },
+    ],
+  };
+
+  try {
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${process.env.GEMINAI_API_KEY}`,
+      dataToSend,
+      { headers: { "Content-Type": "application/json" } }
+    );
+    const suggestionsText = response.data.candidates[0].content.parts[0].text;
+
+
+    res.json({
+      suggestionsText,
+      // existingProducts: existingProducts,
+    });
+
+  } catch (error) {
+    console.error("Error fetching suggestions:", error);
+    res.status(500).json({ error: "Error fetching suggestions" });
+  }
+};
+
 module.exports = {
   getAllProducts,
   getProductById,
@@ -414,4 +446,5 @@ module.exports = {
   getProductsByCategory,
   getSuggestedProducts,
   searchProducts,
+  suggestProducts,
 };

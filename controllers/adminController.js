@@ -2,46 +2,41 @@ const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-
-
 // Get Admin by ID
 exports.getAdminById = async (req, res) => {
   try {
     const { id } = req.params;
+    const admin = await Admin.findById(id).select('-password'); 
 
-    const admin = await Admin.findById(id).select('-password'); // Exclude password
     if (!admin) {
-      return res.status(404).json({ error: 'Admin not found' });
+      return res.status(404).json({ success: false, message: 'Admin not found' });
     }
 
     res.json(admin);
   } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ message: error.message });
+    console.error(error.message);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
-
-//All admins
+// Get all Admins
 exports.getAdmins = async (req, res) => {
   try {
     const admins = await Admin.find({ isAdmin: true });
     res.json(admins);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
-
-//Requested admins
+// Get requested (non-approved) Admins
 exports.requestAdmins = async (req, res) => {
   try {
     const admins = await Admin.find({ isAdmin: false }).select('-password');
-    console.log(admins);
     res.json(admins);
   } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ message: error.message });
+    console.error(error.message);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
@@ -50,29 +45,20 @@ exports.registerAdmin = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
-      return res.status(400).json({ error: 'Admin already exists' });
+      return res.status(400).json({ success: false, message: 'Admin already exists' });
     }
 
-    // Hash the password before saving it to the database
-    const saltRounds = 10; // You can adjust the number of salt rounds as needed
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    // Create a new admin with the hashed password
-    const newAdmin = new Admin({
-      name,
-      email,
-      password: hashedPassword,
-     
-    });
 
-    // Save the admin to the database
+    const newAdmin = new Admin({ name, email, password: hashedPassword });
     await newAdmin.save();
 
-    res.status(201).json({ message: 'Admin registered, wait for super admin approval' });
+    res.status(201).json({ success: true, message: 'Admin registered, wait for super admin approval' });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
@@ -80,23 +66,17 @@ exports.registerAdmin = async (req, res) => {
 exports.loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // Find admin by email
+
     const admin = await Admin.findOne({ email });
-
     if (!admin) {
-      return res.status(404).json({ error: 'Admin not found' });
+      return res.status(404).json({ success: false, message: 'Admin not found' });
     }
 
-    // Compare passwords
-    // const isMatch = await admin.comparePassword(password);
     const isMatch = await bcrypt.compare(password, admin.password);
-
     if (!isMatch || !admin.isAdmin) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+      return res.status(400).json({ success: false, message: 'Invalid credentials or not an approved admin' });
     }
 
-    // Create a token
     const token = jwt.sign(
       { id: admin._id, email: admin.email },
       process.env.JWT_SECRET,
@@ -104,24 +84,24 @@ exports.loginAdmin = async (req, res) => {
     );
 
     res.json({
+      success: true,
       message: 'Login successful',
       token,
       admin: {
         id: admin._id,
         name: admin.name,
         email: admin.email,
-        isAdmin:admin.isAdmin
-      }
+        isAdmin: admin.isAdmin,
+      },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
-
-
+// Update Admin
 exports.updateAdmin = async (req, res) => {
-  const { name, email, password,isAdmin } = req.body;
+  const { name, email, password, isAdmin, img } = req.body;
 
   try {
     const admin = await Admin.findById(req.params.id);
@@ -129,38 +109,35 @@ exports.updateAdmin = async (req, res) => {
     if (admin) {
       admin.name = name || admin.name;
       admin.email = email || admin.email;
-      admin.isAdmin = isAdmin || admin.isAdmin;
+      admin.isAdmin = isAdmin ?? admin.isAdmin; // Use nullish coalescing to preserve boolean value
+      admin.img = img || admin.img;
 
       if (password) {
-        admin.password = password;
+        admin.password = await bcrypt.hash(password, 10); // Only hash if password is being updated
       }
 
       const updatedAdmin = await admin.save();
       res.json(updatedAdmin);
     } else {
-      res.status(404).json({ message: 'Admin not found' });
+      res.status(404).json({ success: false, message: 'Admin not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
 
-
+// Delete Admin
 exports.deleteAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-
     const adminDel = await Admin.deleteOne({ _id: id });
 
-    if (adminDel.deletedCount > 0) { 
-      res.json({ message: 'Admin removed' });
+    if (adminDel.deletedCount > 0) {
+      res.json({ success: true, message: 'Admin removed' });
     } else {
-      res.status(404).json({ message: 'Admin not found' });
+      res.status(404).json({ success: false, message: 'Admin not found' });
     }
   } catch (error) {
-    // console.log(error.message);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };
-
-

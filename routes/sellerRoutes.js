@@ -7,6 +7,8 @@ const { sellerAuth } = require('../middleware/authMiddleware');
 
 // Get all sellers
 router.get('/sellers', sellerController.getSellers);
+// GET endpoint to fetch reviews for a specific seller by sellerId
+router.get('/:sellerId/reviews', sellerController.getSellerReviews);
 //Product by seller
 router.get('/products',sellerAuth, productController.getSellerProducts);
 // /api/seller/sellers/deactivated
@@ -15,6 +17,8 @@ router.get('/sellers/deactivated', sellerController.deactivateSellers);
 router.get('/sellers/:id', sellerController.getSellerById);
 // Route to fetch products by category for a specific seller
 router.get('/:sellerId/products/category/:category', sellerController.fetchProductsByCategoryOfSeller);
+// Add review for a specific seller
+router.post('/:sellerId/reviews', sellerController.addSellerReview);
 // Register a new seller
 router.post('/register', sellerController.registerSeller);
 // Login a seller

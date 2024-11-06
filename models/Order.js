@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 const OrderSchema = new mongoose.Schema(
   {
-    tran_id: { type: String, required: true, unique: true }, // Ensure it's unique
+    tran_id: { type: String, required: true, unique: true },
     customerName: String,
     transactionId: String,
     customerEmail: String,
+    customerId:String,
     customerAddress: String,
     customerMobile: String,
     totalAmount: Number,

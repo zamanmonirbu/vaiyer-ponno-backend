@@ -2,6 +2,8 @@ const Seller = require('../models/Seller');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Product = require('../models/Product');
+const Review = require('../models/Review'); 
+
 
 
 // Get all sellers
@@ -46,6 +48,60 @@ exports.getSellerById = async (req, res) => {
 };
 
 
+
+// Controller to fetch reviews for a specific seller
+exports.getSellerReviews = async (req, res) => {
+  const { sellerId } = req.params;
+
+  try {
+    const reviews = await Review.find({ sellerId }).populate('user', 'firstName'); // Assuming `user` reference for review authors
+
+    if (!reviews || reviews.length === 0) {
+      return res.status(404).json({ message: 'No reviews found for this seller.' });
+    }
+
+    res.status(200).json(reviews);
+  } catch (error) {
+    console.error('Error fetching seller reviews:', error);
+    res.status(500).json({ message: 'Failed to fetch seller reviews.' });
+  }
+};
+
+
+
+
+// Controller to add a review for a specific seller
+exports.addSellerReview = async (req, res) => {
+  const { sellerId } = req.params;
+  const { rating, review, user } = req.body;
+
+  try {
+    // Validate input data
+    if (!rating || !review || !user) {
+      return res.status(400).json({ message: 'Rating, review, and user information are required.' });
+    }
+
+    // Create a new review
+    const newReview = new Review({
+      sellerId,
+      rating,
+      review,
+      user, // Assuming user has at least an id and name
+    });
+
+    // Save the review to the database
+    await newReview.save();
+
+    res.status(201).json({ message: 'Review added successfully', review: newReview });
+  } catch (error) {
+    console.error('Error adding review:', error);
+    res.status(500).json({ message: 'Failed to add review' });
+  }
+};
+
+
+
+
 // Controller to fetch products by category for a specific seller
 exports.fetchProductsByCategoryOfSeller = async (req, res) => {
   const { sellerId, category } = req.params;
@@ -81,6 +137,8 @@ exports.updateSeller = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+
 
 // Delete a seller
 exports.deleteSeller = async (req, res) => {

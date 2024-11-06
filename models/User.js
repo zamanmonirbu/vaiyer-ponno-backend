@@ -2,7 +2,11 @@ const mongoose = require('mongoose');
 
 const userSchema = mongoose.Schema(
     {
-        name: {
+        firstName: { // Changed to firstName
+            type: String,
+            required: true,
+        },
+        lastName: { // Added lastName
             type: String,
             required: true,
         },
@@ -17,6 +21,8 @@ const userSchema = mongoose.Schema(
         },
         img: {
             type: String,
+            default:'https://cdn-icons-png.flaticon.com/128/3237/3237472.png',
+           
         },
         address: {
             type: String,
@@ -26,8 +32,10 @@ const userSchema = mongoose.Schema(
             type: String,
             default: null,
         },
-        // order: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: [] }],
-        order: [{ type: String }],
+        order: [{ 
+            type: String, 
+            default: [] // Set a default value for order
+        }],
         location: { 
             type: mongoose.Schema.Types.ObjectId, 
             ref: 'Location', 

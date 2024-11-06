@@ -1,8 +1,6 @@
-
-
 const express = require("express");
 const SSLCommerzPayment = require("sslcommerz-lts");
-const { v4: uuidv4 } = require("uuid"); // Import UUID library
+const { v4: uuidv4 } = require("uuid");
 const router = express.Router();
 const Order = require("../models/Order");
 const Product = require("../models/Product");
@@ -15,6 +13,7 @@ const store_id = process.env.Store_ID;
 const store_passwd = process.env.Store_Password;
 const is_live = false;
 
+// Main payment route
 router.post("/payment", async (req, res) => {
   const uId = uuidv4();
   const {
@@ -27,48 +26,40 @@ router.post("/payment", async (req, res) => {
     totalAmount,
   } = req.body;
 
+
   if (!customerName || !customerEmail || !products || !totalAmount) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  // Extract product and seller IDs dynamically
   const productIds = products.map((product) => product.productId);
   const sellerIds = products.map((product) => product.sellerId);
 
-  // Common values
   const defaultCity = "Dhaka";
   const defaultCountry = "Bangladesh";
   const defaultPostcode = "1000";
 
-  // Data for SSLCommerz payment
   const data = {
     total_amount: totalAmount,
     currency: "BDT",
-    tran_id: uId, // use a unique tran_id for each API call
+    tran_id: uId,
     success_url: `http://localhost:5000/api/payment/success/${uId}`,
     fail_url: `http://localhost:5000/api/payment/fail/${uId}`,
     cancel_url: `http://localhost:5000/api/payment/cancel/${uId}`,
     ipn_url: "http://localhost:5000/ipn",
     shipping_method: "Courier",
-    product_name: "Product Purchase", // Customize product name as needed
+    product_name: "Product Purchase",
     product_category: "General",
     product_profile: "general",
-    cusId:customerId,
     cus_name: customerName,
     cus_email: customerEmail,
     cus_add1: customerAddress,
-    cus_add2: defaultCity,
     cus_city: defaultCity,
-    cus_state: defaultCity,
     cus_postcode: defaultPostcode,
     cus_country: defaultCountry,
     cus_phone: customerMobile || "N/A",
-    cus_fax: customerMobile || "N/A",
-    ship_name: customerName, 
+    ship_name: customerName,
     ship_add1: customerAddress,
-    ship_add2: defaultCity,
     ship_city: defaultCity,
-    ship_state: defaultCity,
     ship_postcode: "1800",
     ship_country: defaultCountry,
   };
@@ -77,10 +68,7 @@ router.post("/payment", async (req, res) => {
     const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
     sslcz.init(data).then(async (apiResponse) => {
       const { GatewayPageURL } = apiResponse;
-      // console.log("Gateway",GatewayPageURL);
       if (GatewayPageURL) {
-        // console.log("From here", data.tran_id);
-        // Save the new order in the database
         const newOrder = new Order({
           tran_id: data.tran_id,
           transactionId: data.tran_id,
@@ -96,20 +84,15 @@ router.post("/payment", async (req, res) => {
           currency: data.currency,
           shipping_method: data.shipping_method,
           cus_country: data.cus_country,
-          ship_name: data.ship_name, // Reuse data fields
+          ship_name: data.ship_name,
           ship_add1: data.ship_add1,
-          ship_add2: data.ship_add2,
           ship_city: data.ship_city,
-          ship_state: data.ship_state,
           ship_postcode: data.ship_postcode,
           ship_country: data.ship_country,
-          customerId:data.cusId,
+          customerId,
         });
 
         await newOrder.save();
-
-
-        // Redirect to payment gateway
         res.json({ GatewayPageURL });
       } else {
         res.status(500).json({ error: "Failed to initiate payment" });
@@ -117,52 +100,33 @@ router.post("/payment", async (req, res) => {
     });
   } catch (error) {
     console.error("Payment initiation error:", error);
-    res
-      .status(500)
-      .json({ error: "Payment initiation failed", details: error.message });
+    res.status(500).json({ error: "Payment initiation failed", details: error.message });
   }
+});
 
-  // Success route
+// Success route
 router.post("/payment/success/:id", async (req, res) => {
   const { id } = req.params;
-
   try {
-    // Update the order status
     const result = await Order.updateOne(
       { tran_id: id },
-      {
-        $set: {
-          status: true,
-        },
-      }
+      { $set: { status: true } }
     );
 
-    const orderData= await Order.findOne({ tran_id: id });
-
-    console.log(orderData)
-
-    // console.log("ORder ID", orderData)
-
+    const orderData = await Order.findOne({ tran_id: id });
     if (result.modifiedCount > 0) {
-      // Update each product individually
       for (let product of orderData.products) {
-        // Ensure qty is a valid number, otherwise default to 0
         const qty = product.qty && !isNaN(product.qty) ? product.qty : 0;
-
         if (qty > 0) {
           await Product.updateOne(
             { _id: product.productId },
-            {
-              $push: { order: orderData._id },
-              $inc: { quantity: -qty }
-            }
+            { $push: { order: orderData._id }, $inc: { quantity: -qty } }
           );
         } else {
           console.error(`Invalid quantity for product ${product.productId}`);
         }
       }
 
-      // Update the user to push the order ID into the user's order array
       const userUpdate = await User.updateOne(
         { _id: orderData.customerId },
         { $push: { order: orderData._id } }
@@ -185,34 +149,34 @@ router.post("/payment/success/:id", async (req, res) => {
   }
 });
 
-
-  //   Cancel route
-  router.post("/payment/cancel/:id", async (req, res) => {
-    const { id } = req.params;
-    try {
-      await Order.updateOne({ tran_id: id }, { $set: { status: false } });
-      res.redirect(`http://localhost:5173/payment/cancel/${id}`);
-    } catch (error) {
-      console.error("Error handling cancel order:", error);
-      res.status(500).json({
-        error: "Failed to handle cancel order",
-        details: error.message,
-      });
-    }
-  });
-
-  router.post("/payment/fail/:id", async (req, res) => {
-    const { id } = req.params;
-    try {
-      await Order.updateOne({ tran_id: id }, { $set: { status: false } });
-      res.redirect(`http://localhost:5173/payment/fail/${id}`);
-    } catch (error) {
-      console.error("Error handling failed order:", error);
-      res.status(500).json({
-        error: "Failed to handle failed order",
-        details: error.message,
-      });
-    }
-  });
+// Cancel route
+router.post("/payment/cancel/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await Order.updateOne({ tran_id: id }, { $set: { status: false } });
+    res.redirect(`http://localhost:5173/payment/cancel/${id}`);
+  } catch (error) {
+    console.error("Error handling cancel order:", error);
+    res.status(500).json({
+      error: "Failed to handle cancel order",
+      details: error.message,
+    });
+  }
 });
+
+// Fail route
+router.post("/payment/fail/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await Order.updateOne({ tran_id: id }, { $set: { status: false } });
+    res.redirect(`http://localhost:5173/payment/fail/${id}`);
+  } catch (error) {
+    console.error("Error handling failed order:", error);
+    res.status(500).json({
+      error: "Failed to handle failed order",
+      details: error.message,
+    });
+  }
+});
+
 module.exports = router;

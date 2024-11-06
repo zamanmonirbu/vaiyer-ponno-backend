@@ -21,11 +21,16 @@ const paymentRoutes = require("./routes/paymentRoutes.js");
 const ChatRoute = require("./routes/ChatRoute.js");
 const MessageRoute = require("./routes/MessageRoute.js");
 const searchRoutes = require("./routes/searchRoutes.js");
+const imageRoutes = require("./routes/imageRoutes");
+const taskRoutes = require('./routes/taskRoutes');
+const videoRoutes = require('./routes/videoRoutes');
+const app = express();
 
 dotenv.config();
 connectDB();
 
-const app = express();
+
+
 
 app.use(express.json());
 app.use(cookieParser());
@@ -49,6 +54,9 @@ app.use("/api", paymentRoutes);
 app.use("/chat", ChatRoute);
 app.use("/message", MessageRoute);
 app.use("/api",searchRoutes);
+app.use("/api/images", imageRoutes);
+app.use('/api', taskRoutes);
+app.use('/api', videoRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
