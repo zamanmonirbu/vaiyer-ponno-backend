@@ -24,14 +24,11 @@ const searchRoutes = require("./routes/searchRoutes.js");
 const imageRoutes = require("./routes/imageRoutes");
 const taskRoutes = require('./routes/taskRoutes');
 const videoRoutes = require('./routes/videoRoutes');
-const app = express();
+const storeRoutes = require('./routes/storeRoutes');
 
+const app = express();
 dotenv.config();
 connectDB();
-
-
-
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
@@ -46,6 +43,7 @@ app.use("/api/seller", sellerRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
+app.use('/api/store', storeRoutes);
 app.use("/api", categoryRoutes);
 app.use("/api", bannerRoutes);
 app.use("/api", commentRoutes);
@@ -57,6 +55,7 @@ app.use("/api",searchRoutes);
 app.use("/api/images", imageRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', videoRoutes);
+
 
 // Error handling middleware
 app.use(errorHandler);
