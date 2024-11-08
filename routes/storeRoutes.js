@@ -7,7 +7,7 @@ const { sellerAuth } = require('../middleware/authMiddleware');
 router.post('/', sellerAuth, storeController.createStore);
 
 // Get all stores of a seller
-router.get('/', sellerAuth, storeController.getStoresBySeller);
+router.get('/lists', sellerAuth, storeController.getStoresBySeller);
 
 // Get a single store by ID
 router.get('/:id', sellerAuth, storeController.getStoreById);
