@@ -32,7 +32,7 @@ exports.createStore = async (req, res) => {
 exports.getStoresBySeller = async (req, res) => {
   try {
     const sellerId = req.seller._id;
-    console.log(sellerId)
+    // console.log(sellerId)
     const stores = await Store.find({ sellerId });
     res.json(stores);
   } catch (error) {
