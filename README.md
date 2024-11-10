@@ -2,7 +2,7 @@
 
     [Live Link](https://vaiyer-ponno-client.vercel.app/) |  [Front-end Code](https://github.com/zamanmonirbu/vaiyer-ponno-client.git) |
     [Socket Code](https://github.com/zamanmonirbu/vaiyer-ponno-socket) |
-    [Demo Video](https://demo-video-link.com)
+    [Demo Video](https://youtu.be/xU94ACV-VyQ)
 
 
     ---
