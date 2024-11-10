@@ -67,7 +67,7 @@ The backend uses **dotenv** to manage environment variables. Ensure that the fol
 ```env
 MONGO_URI=
 PORT=
-NODE_ENV=development
+NODE_ENV=
 JWT_SECRET=
 JWT_REFRESH_SECRET=
 GEMINAI_API_KEY=
