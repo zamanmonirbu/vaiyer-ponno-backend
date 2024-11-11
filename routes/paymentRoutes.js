@@ -179,4 +179,55 @@ router.post("/payment/fail/:id", async (req, res) => {
   }
 });
 
+
+
+
+// COD payment route
+router.post("/payment/cod", async (req, res) => {
+  const {
+    customerId,
+    customerName,
+    customerAddress,
+    customerEmail,
+    customerMobile,
+    products,
+    totalAmount,
+  } = req.body;
+
+  try {
+    // Validate required fields
+    if (!customerName || !customerEmail || !products || !totalAmount) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const productIds = products.map((product) => product.productId);
+    const sellerIds = products.map((product) => product.sellerId);
+
+    // Create and save the order with COD as the payment method
+    const newOrder = new Order({
+      customerName,
+      customerEmail,
+      customerAddress,
+      customerMobile,
+      totalAmount,
+      products,
+      status: false,
+      sellerIds,
+      productIds,
+      paymentMethod: "Cash on Delivery", // Specify COD here
+      customerId,
+    });
+
+    await newOrder.save();
+    res.status(200).json({ message: "Order placed successfully with Cash on Delivery!" });
+  } catch (error) {
+    console.error("Error placing COD order:", error);
+    res.status(500).json({ error: "Failed to place COD order", details: error.message });
+  }
+});
+
+
+
+
+
 module.exports = router;
