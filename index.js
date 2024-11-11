@@ -25,8 +25,8 @@ const imageRoutes = require("./routes/imageRoutes");
 const taskRoutes = require('./routes/taskRoutes');
 const videoRoutes = require('./routes/videoRoutes');
 const storeRoutes = require('./routes/storeRoutes');
-const courierRoutes = require('./routes/courierRoutes');
-const deliveryManRoutes = require('./routes/deliveryManRoutes');
+// const courierRoutes = require('./routes/courierRoutes');
+// const deliveryManRoutes = require('./routes/deliveryManRoutes');
 
 const app = express();
 dotenv.config();
@@ -57,8 +57,8 @@ app.use("/api",searchRoutes);
 app.use("/api/images", imageRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', videoRoutes);
-app.use('/api/couriers', courierRoutes);
-app.use('/api/deliverymen', deliveryManRoutes);
+// app.use('/api/couriers', courierRoutes);
+// app.use('/api/deliverymen', deliveryManRoutes);
 
 
 // Error handling middleware
