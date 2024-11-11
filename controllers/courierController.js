@@ -1,6 +1,5 @@
 const Courier = require('../models/Courier');
 
-// Create a new courier
 const createCourier = async (req, res) => {
   try {
     const newCourier = new Courier(req.body);
@@ -11,7 +10,6 @@ const createCourier = async (req, res) => {
   }
 };
 
-// Get all couriers
 const getAllCouriers = async (req, res) => {
   try {
     const couriers = await Courier.find();
@@ -21,4 +19,4 @@ const getAllCouriers = async (req, res) => {
   }
 };
 
-module.exports={getAllCouriers,createCourier}
+module.exports = { createCourier, getAllCouriers };

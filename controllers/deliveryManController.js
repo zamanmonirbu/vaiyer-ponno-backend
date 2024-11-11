@@ -1,6 +1,5 @@
 const DeliveryMan = require('../models/DeliveryMan');
 
-// Create a new delivery man
 const createDeliveryMan = async (req, res) => {
   try {
     const newDeliveryMan = new DeliveryMan(req.body);
@@ -11,7 +10,6 @@ const createDeliveryMan = async (req, res) => {
   }
 };
 
-// Get all delivery men
 const getAllDeliveryMen = async (req, res) => {
   try {
     const deliveryMen = await DeliveryMan.find();
@@ -21,4 +19,4 @@ const getAllDeliveryMen = async (req, res) => {
   }
 };
 
-module.exports={createDeliveryMan,getAllDeliveryMen}
+module.exports = { createDeliveryMan, getAllDeliveryMen };
