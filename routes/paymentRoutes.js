@@ -16,6 +16,7 @@ const is_live = false;
 // Main payment route
 router.post("/payment", async (req, res) => {
   const uId = uuidv4();
+  
   const {
     customerId,
     customerName,
@@ -182,8 +183,11 @@ router.post("/payment/fail/:id", async (req, res) => {
 
 
 
+
 // COD payment route
 router.post("/payment/cod", async (req, res) => {
+  const uId = uuidv4();
+
   const {
     customerId,
     customerName,
@@ -194,27 +198,40 @@ router.post("/payment/cod", async (req, res) => {
     totalAmount,
   } = req.body;
 
-  try {
-    // Validate required fields
-    if (!customerName || !customerEmail || !products || !totalAmount) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
+  // Validate required fields
+  if (!customerName || !customerEmail || !products || !totalAmount) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
 
+  try {
     const productIds = products.map((product) => product.productId);
     const sellerIds = products.map((product) => product.sellerId);
 
-    // Create and save the order with COD as the payment method
+    // Default values
+    const defaultCity = "Dhaka";
+    const defaultCountry = "Bangladesh";
+    const defaultPostcode = "1000";
+
     const newOrder = new Order({
+      tran_id: uId,                         // Unique transaction ID for tracking
+      transactionId: uId,
       customerName,
       customerEmail,
       customerAddress,
-      customerMobile,
+      customerMobile: customerMobile || "N/A",
       totalAmount,
       products,
-      status: false,
+      status: false,                        // Initial status is false for unfulfilled
       sellerIds,
       productIds,
-      paymentMethod: "Cash on Delivery", // Specify COD here
+      currency: "BDT",                      // Hardcoded currency to BDT
+      shipping_method: "Courier",
+      cus_country: defaultCountry,
+      ship_name: customerName,
+      ship_add1: customerAddress,
+      ship_city: defaultCity,
+      ship_postcode: defaultPostcode,
+      ship_country: defaultCountry,
       customerId,
     });
 
@@ -225,9 +242,6 @@ router.post("/payment/cod", async (req, res) => {
     res.status(500).json({ error: "Failed to place COD order", details: error.message });
   }
 });
-
-
-
 
 
 module.exports = router;
