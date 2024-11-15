@@ -1,8 +1,19 @@
-// const express = require('express');
-// const { createDeliveryMan, getAllDeliveryMen } = require('../controllers/deliveryManController');
-// const router = express.Router();
+const express = require('express');
+const router = express.Router();
+const { registerDeliveryMan, loginDeliveryMan, getDeliveryManProfile, updateDeliveryManProfile } = require('../controllers/deliveryManController');
+const { DeliveryManAuth } = require('../middleware/authMiddleware');
 
-// router.post('/', createDeliveryMan);    // POST /api/deliverymen
-// router.get('/', getAllDeliveryMen);     // GET /api/deliverymen
+DeliveryManAuth
+// Register a DeliveryMan
+router.post('/register', registerDeliveryMan);
 
-// module.exports = router;
+// Login a DeliveryMan
+router.post('/login', loginDeliveryMan);
+
+// Fetch DeliveryMan Profile by ID (protected route)
+router.get('/profile/:id', DeliveryManAuth, getDeliveryManProfile);
+
+// Update DeliveryMan Profile (protected route)
+router.put('/profile/:id', DeliveryManAuth, updateDeliveryManProfile);
+
+module.exports = router;

@@ -1,8 +1,23 @@
-// const express = require('express');
-// const { createCourier, getAllCouriers } = require('../controllers/CourierController');
-// const router = express.Router();
+const express = require("express");
+const router = express.Router();
+const {
+  registerCourier,
+  loginCourier,
+  getCourierProfile,
+  updateCourierProfile,
+} = require("../controllers/courierController");
+const { courierAuth } = require("../middleware/authMiddleware"); // Protect middleware
 
-// router.post('/', createCourier);    // POST /api/couriers
-// router.get('/', getAllCouriers);    // GET /api/couriers
+// POST /api/couriers/register
+router.post("/register", registerCourier);
 
-// module.exports = router;
+// POST /api/couriers/login
+router.post("/login", loginCourier);
+
+// GET /api/couriers/profile (Protected Route)
+router.get("/profile/:courierId", courierAuth, getCourierProfile);
+
+router.put("/profile/:courierId", courierAuth, updateCourierProfile);
+
+
+module.exports = router;

@@ -187,7 +187,6 @@ router.post("/payment/fail/:id", async (req, res) => {
 // COD payment route
 router.post("/payment/cod", async (req, res) => {
   const uId = uuidv4();
-
   const {
     customerId,
     customerName,
@@ -198,7 +197,6 @@ router.post("/payment/cod", async (req, res) => {
     totalAmount,
   } = req.body;
 
-  // Validate required fields
   if (!customerName || !customerEmail || !products || !totalAmount) {
     return res.status(400).json({ error: "Missing required fields" });
   }
@@ -207,13 +205,12 @@ router.post("/payment/cod", async (req, res) => {
     const productIds = products.map((product) => product.productId);
     const sellerIds = products.map((product) => product.sellerId);
 
-    // Default values
     const defaultCity = "Dhaka";
     const defaultCountry = "Bangladesh";
     const defaultPostcode = "1000";
 
     const newOrder = new Order({
-      tran_id: uId,                         // Unique transaction ID for tracking
+      tran_id: uId,
       transactionId: uId,
       customerName,
       customerEmail,
@@ -221,10 +218,10 @@ router.post("/payment/cod", async (req, res) => {
       customerMobile: customerMobile || "N/A",
       totalAmount,
       products,
-      status: false,                        // Initial status is false for unfulfilled
+      status: false,
       sellerIds,
       productIds,
-      currency: "BDT",                      // Hardcoded currency to BDT
+      currency: "BDT",
       shipping_method: "Courier",
       cus_country: defaultCountry,
       ship_name: customerName,
@@ -235,13 +232,60 @@ router.post("/payment/cod", async (req, res) => {
       customerId,
     });
 
-    await newOrder.save();
+    const savedData = await newOrder.save();
+
+    if (savedData.tran_id) {
+      const id = savedData.tran_id;
+
+      try {
+        const orderData = await Order.findOne({ tran_id: id });
+        if (orderData) {
+          for (let product of orderData.products) {
+            const qty = product.qty && !isNaN(product.qty) ? product.qty : 0;
+            if (qty > 0) {
+              await Product.updateOne(
+                { _id: product.productId },
+                { $push: { order: orderData._id }, $inc: { quantity: -qty } }
+              );
+            } else {
+              console.error(`Invalid quantity for product ${product.productId}`);
+            }
+          }
+
+          const userUpdate = await User.updateOne(
+            { _id: orderData.customerId },
+            { $push: { order: orderData._id } }
+          );
+
+          // console.log("userUpdate",userUpdate)
+          if (userUpdate.modifiedCount > 0) {
+            return res.status(200).json({redirectUrl: `/payment/success/${uId}` });
+          } else {
+            return res.status(404).json({ error: "User not found or already updated" });
+          }
+        } else {
+          return res.status(404).json({ error: "Order not found or already updated" });
+        }
+      } catch (error) {
+        console.error("Error updating order status or product/user:", error);
+        return res.status(500).json({
+          error: "Failed to update order status, product, or user",
+          details: error.message,
+        });
+      }
+    }
+    
+    // Only this response will be sent if above condition is not met
     res.status(200).json({ message: "Order placed successfully with Cash on Delivery!" });
   } catch (error) {
     console.error("Error placing COD order:", error);
     res.status(500).json({ error: "Failed to place COD order", details: error.message });
   }
 });
+
+
+
+
 
 
 module.exports = router;

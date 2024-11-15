@@ -2,6 +2,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Seller = require('../models/Seller');
 const Admin = require('../models/Admin');
+const Courier = require("../models/Courier");
+const DeliveryMan = require('../models/DeliveryMan');
+
+
 
 // Protect routes and check for user role
 const userAuth = async (req, res, next) => {
@@ -83,6 +87,61 @@ const adminAuth = async (req, res, next) => {
 };
 
 
+const courierAuth = async (req, res, next) => {
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await Courier.findById(decoded.id).select("-password");
+    //   console.log(req.user)
+      next();
+    } catch (error) {
+      res.status(401).json({ message: "Not authorized, token failed" });
+    }
+  }
+
+  if (!token) {
+    res.status(401).json({ message: "Not authorized, no token" });
+  }
+};
+
+
+
+
+
+// Protect routes middleware
+const DeliveryManAuth = async (req, res, next) => {
+  let token;
+
+  // Check for token in Authorization header (Bearer token)
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+
+      // Verify the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Attach deliveryMan to request object
+      req.deliveryMan = await DeliveryMan.findById(decoded.id).select('-password');
+
+      next();
+    } catch (error) {
+      res.status(401).json({ message: 'Not authorized, token failed' });
+    }
+  }
+
+  if (!token) {
+    res.status(401).json({ message: 'No token, not authorized' });
+  }
+};
+
+
+
 const validateRefreshToken = (req, res, next) => {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
@@ -92,4 +151,4 @@ const validateRefreshToken = (req, res, next) => {
     next();
 };
 
-module.exports = { userAuth, sellerAuth, adminAuth, validateRefreshToken };
+module.exports = { userAuth, sellerAuth, adminAuth,courierAuth, validateRefreshToken,DeliveryManAuth };
