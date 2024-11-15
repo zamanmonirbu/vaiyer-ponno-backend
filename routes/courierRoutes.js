@@ -5,6 +5,7 @@ const {
   loginCourier,
   getCourierProfile,
   updateCourierProfile,
+  getAllCouriers
 } = require("../controllers/courierController");
 const { courierAuth } = require("../middleware/authMiddleware"); // Protect middleware
 
@@ -18,6 +19,9 @@ router.post("/login", loginCourier);
 router.get("/profile/:courierId", courierAuth, getCourierProfile);
 
 router.put("/profile/:courierId", courierAuth, updateCourierProfile);
+
+router.get("/", getAllCouriers); // Route to get all couriers
+
 
 
 module.exports = router;

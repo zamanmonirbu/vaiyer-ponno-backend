@@ -4,11 +4,15 @@ const vehicleTypeSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true, // Ensure that vehicle types are unique (Bike, Car, etc.)
   },
   description: {
     type: String,
     default: null, // Optional description for the vehicle type
+  },
+  courierId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Courier", // Refers to the Courier collection
+    required: true, // Make this mandatory if every vehicle type must be linked to a courier
   },
   createdAt: {
     type: Date,

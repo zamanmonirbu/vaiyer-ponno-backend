@@ -1,6 +1,20 @@
 const Courier = require("../models/Courier");
 const jwt = require("jsonwebtoken");
 
+
+
+// Get all couriers
+exports.getAllCouriers = async (req, res) => {
+  try {
+    const couriers = await Courier.find(); 
+    res.json(couriers);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch couriers", error });
+  }
+};
+
+
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {

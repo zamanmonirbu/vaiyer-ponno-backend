@@ -2,7 +2,7 @@ const VehicleType = require("../models/VehicleType");
 
 // Create a new VehicleType
 const createVehicleType = async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description,adminId } = req.body;
 
   try {
     // Check if the vehicle type already exists
@@ -12,7 +12,7 @@ const createVehicleType = async (req, res) => {
     }
 
     // Create a new vehicle type
-    const newVehicleType = new VehicleType({ name, description });
+    const newVehicleType = new VehicleType({ name, description,courierId:adminId });
 
     // Save to database
     await newVehicleType.save();

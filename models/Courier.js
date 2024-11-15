@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const VehicleType = require("./VehicleType"); // Import VehicleType model
 
 const courierSchema = new mongoose.Schema({
   name: {
@@ -30,9 +29,9 @@ const courierSchema = new mongoose.Schema({
   },
   vehicleType: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "VehicleType", 
-    required: true,
+    ref: "VehicleType",
   },
+  ordersSeller: [],
   createdAt: {
     type: Date,
     default: Date.now,

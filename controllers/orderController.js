@@ -1,7 +1,9 @@
 // controllers/orderController.js
 
 const Order = require("../models/Order");
+const SellerOrderToCourier = require("../models/sellerOrderToCourierSchema");
 const User = require("../models/User");
+
 // Fetch orders by user ID
 // Fetch orders by user ID
 const getOrdersByUserId = async (req, res) => {
@@ -13,21 +15,20 @@ const getOrdersByUserId = async (req, res) => {
     }
 
     // Fetch orders using the order IDs from the user's order array, sorted by creation date (descending)
-    const userOrders = await Order.find({ _id: { $in: user.order } })
-      .sort({ createdAt: -1 }); // Change 'createdAt' to the appropriate field for sorting
+    const userOrders = await Order.find({ _id: { $in: user.order } }).sort({
+      createdAt: -1,
+    }); // Change 'createdAt' to the appropriate field for sorting
     res.status(200).json(userOrders);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch user orders", error });
   }
 };
 
-
-
 // Fetch orders by seller ID with specific null status fields
 const getOrdersBySellerId = async (req, res) => {
   try {
     const sellerId = req.params.sellerId;
-    
+
     // Find orders by sellerId with the specified fields as null
     const sellerOrders = await Order.find({
       sellerIds: sellerId,
@@ -49,9 +50,6 @@ const getOrdersBySellerId = async (req, res) => {
   }
 };
 
-
-
-
 // Fetch orders by seller ID
 const getOrderByOrderId = async (req, res) => {
   try {
@@ -69,7 +67,6 @@ const getOrderByOrderId = async (req, res) => {
   }
 };
 
-
 // Find orders with any specified status set to true
 const findOrdersByStatus = async (req, res) => {
   try {
@@ -84,11 +81,11 @@ const findOrdersByStatus = async (req, res) => {
     });
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch orders by status", error });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch orders by status", error });
   }
 };
-
-
 
 // Create a new order
 const createOrder = async (req, res) => {
@@ -96,7 +93,9 @@ const createOrder = async (req, res) => {
     const newOrder = await Order.create(req.body);
     res.status(201).json(newOrder);
   } catch (error) {
-    res.status(400).json({ error: "Error creating order", details: error.message });
+    res
+      .status(400)
+      .json({ error: "Error creating order", details: error.message });
   }
 };
 
@@ -106,7 +105,9 @@ const updateOrder = async (req, res) => {
   const updateData = req.body;
 
   try {
-    const updatedOrder = await Order.findByIdAndUpdate(orderId, updateData, { new: true });
+    const updatedOrder = await Order.findByIdAndUpdate(orderId, updateData, {
+      new: true,
+    });
     if (!updatedOrder) {
       // console.log("Working not")
       return res.status(404).json({ error: "Order not found" });
@@ -115,7 +116,9 @@ const updateOrder = async (req, res) => {
 
     res.status(200).json(updatedOrder);
   } catch (error) {
-    res.status(400).json({ error: "Error updating order", details: error.message });
+    res
+      .status(400)
+      .json({ error: "Error updating order", details: error.message });
   }
 };
 
@@ -130,7 +133,9 @@ const deleteOrder = async (req, res) => {
     }
     res.status(200).json({ message: "Order deleted successfully", orderId });
   } catch (error) {
-    res.status(400).json({ error: "Error deleting order", details: error.message });
+    res
+      .status(400)
+      .json({ error: "Error deleting order", details: error.message });
   }
 };
 
@@ -145,7 +150,9 @@ const getOrderById = async (req, res) => {
     }
     res.status(200).json(order);
   } catch (error) {
-    res.status(400).json({ error: "Error retrieving order", details: error.message });
+    res
+      .status(400)
+      .json({ error: "Error retrieving order", details: error.message });
   }
 };
 
@@ -157,11 +164,11 @@ const getAllOrders = async (req, res) => {
     const orders = await Order.find(filters);
     res.status(200).json(orders);
   } catch (error) {
-    res.status(400).json({ error: "Error fetching orders", details: error.message });
+    res
+      .status(400)
+      .json({ error: "Error fetching orders", details: error.message });
   }
 };
-
-
 
 // Mark order as accepted by seller
 const markOrderAsAccepted = async (req, res) => {
@@ -169,12 +176,17 @@ const markOrderAsAccepted = async (req, res) => {
     const { orderId } = req.params;
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
-      { sellerAcceptedAt: new Date() },
-      { new: true }
+      {
+        sellerAccepted: true, // Update sellerAccepted to true
+        sellerAcceptedAt: new Date(), // Update timestamp
+      },
+      { new: true } // Return the updated document
     );
     res.status(200).json(updatedOrder);
   } catch (error) {
-    res.status(500).json({ message: "Failed to mark order as accepted", error });
+    res
+      .status(500)
+      .json({ message: "Failed to mark order as accepted", error });
   }
 };
 
@@ -182,14 +194,29 @@ const markOrderAsAccepted = async (req, res) => {
 const markOrderAsSentToCourier = async (req, res) => {
   try {
     const { orderId } = req.params;
+    const { courierId } = req.body;
+
+    // Update the order
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
-      { sentToCourierAt: new Date() },
-      { new: true }
+      {
+        sentToCourier: true, // Mark as sent to courier
+        sentToCourierAt: new Date(), // Timestamp
+        sellerAccepted: null, // Reset sellerAccepted
+        sellerAcceptedAt: null, // Reset sellerAcceptedAt timestamp
+      },
+      { new: true } // Return updated document
     );
+
+    // Save to SellerOrderToCourier
+    const sentToCourier = new SellerOrderToCourier({ courierId, orderId });
+    await sentToCourier.save();
+
     res.status(200).json(updatedOrder);
   } catch (error) {
-    res.status(500).json({ message: "Failed to mark order as sent to courier", error });
+    res
+      .status(500)
+      .json({ message: "Failed to mark order as sent to courier", error });
   }
 };
 
@@ -199,12 +226,20 @@ const markOrderAsHandedToDeliveryMan = async (req, res) => {
     const { orderId } = req.params;
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
-      { courierToDeliveryManAt: new Date() },
-      { new: true }
+      {
+        courierToDeliveryMan: true, // Mark as handed to delivery man
+        courierToDeliveryManAt: new Date(), // Timestamp
+        sentToCourier: null,
+        sentToCourierAt: null,
+      },
+      { new: true } // Return updated document
     );
     res.status(200).json(updatedOrder);
   } catch (error) {
-    res.status(500).json({ message: "Failed to mark order as handed to delivery man", error });
+    res.status(500).json({
+      message: "Failed to mark order as handed to delivery man",
+      error,
+    });
   }
 };
 
@@ -214,14 +249,20 @@ const markOrderAsCompleted = async (req, res) => {
     const { orderId } = req.params;
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
-      { orderCompletedAt: new Date() },
-      { new: true }
+      {
+        orderCompleted: true, // Mark as completed
+        orderCompletedAt: new Date(), // Timestamp
+        courierToDeliveryMan: null,
+        courierToDeliveryManAt: null,
+      },
+      { new: true } // Return updated document
     );
     res.status(200).json(updatedOrder);
   } catch (error) {
     res.status(500).json({ message: "Failed to mark order as completed", error });
   }
 };
+
 
 // Mark order as rejected by seller
 const markOrderAsRejected = async (req, res) => {
@@ -234,23 +275,28 @@ const markOrderAsRejected = async (req, res) => {
     );
     res.status(200).json(updatedOrder);
   } catch (error) {
-    res.status(500).json({ message: "Failed to mark order as rejected", error });
+    res
+      .status(500)
+      .json({ message: "Failed to mark order as rejected", error });
   }
 };
 
-
-
 // Fetch orders where 'sellerAccepted' is true and sellerId is in the sellerIds array
 const getOrdersBySellerAccepted = async (req, res) => {
-  const {sellerId} = req.params;
+  const { sellerId } = req.params;
   try {
     const orders = await Order.find({
       sellerAccepted: true,
-      sellerIds: { $in: [sellerId] } // Check if sellerId is in the sellerIds array
+      sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
     });
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Failed to get orders marked as accepted by seller", error });
+    res
+      .status(500)
+      .json({
+        message: "Failed to get orders marked as accepted by seller",
+        error,
+      });
   }
 };
 
@@ -260,11 +306,16 @@ const getOrdersBySentToCourier = async (req, res) => {
   try {
     const orders = await Order.find({
       sentToCourier: true,
-      sellerIds: { $in: [sellerId] } // Check if sellerId is in the sellerIds array
+      sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
     });
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Failed to get orders marked as sent to courier", error });
+    res
+      .status(500)
+      .json({
+        message: "Failed to get orders marked as sent to courier",
+        error,
+      });
   }
 };
 
@@ -274,11 +325,16 @@ const getOrdersByHandedToDeliveryMan = async (req, res) => {
   try {
     const orders = await Order.find({
       courierToDeliveryMan: true,
-      sellerIds: { $in: [sellerId] } // Check if sellerId is in the sellerIds array
+      sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
     });
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Failed to get orders marked as handed to delivery man", error });
+    res
+      .status(500)
+      .json({
+        message: "Failed to get orders marked as handed to delivery man",
+        error,
+      });
   }
 };
 
@@ -288,11 +344,13 @@ const getOrdersByCompleted = async (req, res) => {
   try {
     const orders = await Order.find({
       orderCompleted: true,
-      sellerIds: { $in: [sellerId] } // Check if sellerId is in the sellerIds array
+      sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
     });
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Failed to get orders marked as completed", error });
+    res
+      .status(500)
+      .json({ message: "Failed to get orders marked as completed", error });
   }
 };
 
@@ -302,15 +360,18 @@ const getOrdersBySellerRejected = async (req, res) => {
   try {
     const orders = await Order.find({
       sellerRejected: true,
-      sellerIds: { $in: [sellerId] } // Check if sellerId is in the sellerIds array
+      sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
     });
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Failed to get orders marked as rejected by seller", error });
+    res
+      .status(500)
+      .json({
+        message: "Failed to get orders marked as rejected by seller",
+        error,
+      });
   }
 };
-
-
 
 module.exports = {
   getOrdersByUserId,

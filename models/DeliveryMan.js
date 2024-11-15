@@ -1,8 +1,11 @@
 const mongoose = require("mongoose");
-const VehicleType = require("./VehicleType"); // Import VehicleType model
 
 const deliveryManSchema = new mongoose.Schema({
   firstName: {
+    type: String,
+    required: true,
+  },
+  password: {
     type: String,
     required: true,
   },
@@ -46,6 +49,7 @@ const deliveryManSchema = new mongoose.Schema({
   assignedOrder: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Order",
+    default: null,
   },
   createdAt: {
     type: Date,
