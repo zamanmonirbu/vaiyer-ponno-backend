@@ -28,6 +28,8 @@ const storeRoutes = require('./routes/storeRoutes');
 const courierRoutes = require('./routes/courierRoutes');
 const deliveryManRoutes = require('./routes/deliveryManRoutes');
 const vehicleTypeRoutes = require('./routes/vehicleTypeRoutes');
+const sellerOrderToCourierRoutes = require('./routes/sellerOrderToCourierRoutes');
+
 
 
 const app = express();
@@ -51,6 +53,7 @@ app.use('/api/store', storeRoutes);
 app.use('/api/couriers', courierRoutes);
 app.use('/api/deliveryman', deliveryManRoutes);
 app.use('/api/vehicleTypes', vehicleTypeRoutes);
+app.use("/api/sellerOrderToCourier", sellerOrderToCourierRoutes);
 app.use("/api", categoryRoutes);
 app.use("/api", bannerRoutes);
 app.use("/api", commentRoutes);

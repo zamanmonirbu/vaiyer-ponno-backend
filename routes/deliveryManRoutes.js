@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { registerDeliveryMan, loginDeliveryMan, getDeliveryManProfile, updateDeliveryManProfile } = require('../controllers/deliveryManController');
+const { registerDeliveryMan, loginDeliveryMan, getDeliveryManProfile, updateDeliveryManProfile,getDeliveryMenByCourier } = require('../controllers/deliveryManController');
 const { DeliveryManAuth } = require('../middleware/authMiddleware');
 
-DeliveryManAuth
+
+
+// Route to get delivery men by courier ID
+router.get("/all/:courierId", getDeliveryMenByCourier);
 // Register a DeliveryMan
 router.post('/register', registerDeliveryMan);
 

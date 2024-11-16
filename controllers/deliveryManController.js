@@ -128,9 +128,33 @@ const updateDeliveryManProfile = async (req, res) => {
   }
 };
 
+
+
+// Get all Delivery Men by Courier ID
+const getDeliveryMenByCourier = async (req, res) => {
+  const { courierId } = req.params;
+
+  try {
+    // Find delivery men associated with the provided courierId and populate vehicleType
+    const deliveryMen = await DeliveryMan.find({ courierId }).populate("vehicleType");
+
+    if (!deliveryMen || deliveryMen.length === 0) {
+      return res.status(404).json({ message: "No delivery men found for this courier" });
+    }
+
+    res.status(200).json(deliveryMen);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+
 module.exports = {
   registerDeliveryMan,
   loginDeliveryMan,
   getDeliveryManProfile,
   updateDeliveryManProfile,
+  getDeliveryMenByCourier,
+  
 };
