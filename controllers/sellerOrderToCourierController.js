@@ -1,7 +1,10 @@
+const Order = require("../models/Order");
 const SellerOrderToCourier = require("../models/sellerOrderToCourierSchema");
+
 
 // Create a new SellerOrderToCourier entry
 const createSellerOrderToCourier = async (req, res) => {
+  
   try {
     const { orderId, courierId, isAccept, isReject } = req.body;
 
@@ -59,41 +62,73 @@ const getSellerOrderToCourierById = async (req, res) => {
   }
 };
 
-// Update a SellerOrderToCourier entry
+// Update delivery status (Accept or Reject)
 const updateSellerOrderToCourier = async (req, res) => {
+
+  console.log( req.body,req.params.id)
+
   try {
     const { actionType } = req.body;
 
-    // Determine which field to update based on actionType
+    // Validate actionType and determine which field to update
     let updateFields = {};
     if (actionType === "accept") {
-      updateFields = { isAccept: true, isReject: false };
+      updateFields = { isAssigned: true };
     } else if (actionType === "reject") {
-      updateFields = { isAccept: false, isReject: true };
+      updateFields = { isAssigned: false };
     } else {
       return res.status(400).json({ message: "Invalid actionType" });
     }
 
-    // Update the document in the database
-    const updatedEntry = await SellerOrderToCourier.findByIdAndUpdate(
+    // Find and update the CourierToDeliveryMan entry
+    const updatedAssignment = await SellerOrderToCourier.findByIdAndUpdate(
       req.params.id,
       updateFields,
       { new: true } // Return the updated document
     );
 
-    if (!updatedEntry) {
-      return res.status(404).json({ message: "Entry not found" });
+    if (!updatedAssignment) {
+      return res.status(404).json({ message: "Assignment not found" });
     }
 
-    res
-      .status(200)
-      .json({ message: "Entry updated successfully", data: updatedEntry });
+    // If the assignment was accepted, update the SellerOrderToCourier document
+    if (actionType === "accept") {
+      await SellerOrderToCourier.findOneAndUpdate(
+        { orderId: updatedAssignment.orderId, courierId: updatedAssignment.courierId },
+        { isAccept: true, isReject: false },
+        { new: true }
+      );
+    } else if (actionType === "reject") {
+      await SellerOrderToCourier.findOneAndUpdate(
+        { orderId: updatedAssignment.orderId, courierId: updatedAssignment.courierId },
+        { isReject: true },
+        { new: true }
+      );
+    }
+console.log(updatedAssignment);
+    // Update the Order model's sentToCourier field if the assignment was accepted
+    if (updatedAssignment && actionType === "accept") {
+      await Order.findByIdAndUpdate(
+        updatedAssignment.orderId,
+        { sentToCourier: true, sentToCourierAt: new Date() },
+        { new: true }
+      );
+    }
+
+    res.status(200).json({
+      message: "Delivery status updated successfully.",
+      data: updatedAssignment,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to update entry", error: error.message });
+    console.log(error)
+    res.status(500).json({
+      message: "Failed to update delivery status.",
+      error: error.message,
+    });
   }
 };
+
+
 
 // Delete a SellerOrderToCourier entry
 const deleteSellerOrderToCourier = async (req, res) => {
@@ -117,8 +152,12 @@ const deleteSellerOrderToCourier = async (req, res) => {
 // Accept an order
 const acceptOrder = async (req, res) => {
   try {
-    const order = await SellerOrderToCourier.find({ isAccept: true }).populate("orderId courierId");
-    if (!order) {
+    const order = await SellerOrderToCourier.find({
+      isAccept: true,
+      isSubmittedToDeliveryMan: false,
+    }).populate("orderId courierId");
+    
+        if (!order) {
       return res
         .status(404)
         .json({ success: false, message: "Order not found" });

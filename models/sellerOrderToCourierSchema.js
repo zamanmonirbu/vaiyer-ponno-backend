@@ -20,6 +20,14 @@ const sellerOrderToCourierSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Initially, the courier has not rejected
     },
+    isReceivedByDeliveryMan: {
+      type: Boolean,
+      default: false, // Indicates if the delivery man has received the order
+    },
+    isSubmittedToDeliveryMan: {
+      type: Boolean,
+      default: false, // Indicates if the delivery man has received the order
+    },
   },
   { timestamps: true } // Automatically add createdAt and updatedAt fields
 );

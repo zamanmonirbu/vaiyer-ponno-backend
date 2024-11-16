@@ -29,6 +29,7 @@ const courierRoutes = require('./routes/courierRoutes');
 const deliveryManRoutes = require('./routes/deliveryManRoutes');
 const vehicleTypeRoutes = require('./routes/vehicleTypeRoutes');
 const sellerOrderToCourierRoutes = require('./routes/sellerOrderToCourierRoutes');
+const courierToDeliveryManRoutes = require("./routes/courierToDeliveryManRoutes");
 
 
 
@@ -54,6 +55,7 @@ app.use('/api/couriers', courierRoutes);
 app.use('/api/deliveryman', deliveryManRoutes);
 app.use('/api/vehicleTypes', vehicleTypeRoutes);
 app.use("/api/sellerOrderToCourier", sellerOrderToCourierRoutes);
+app.use("/api/courierToDeliveryMan", courierToDeliveryManRoutes);
 app.use("/api", categoryRoutes);
 app.use("/api", bannerRoutes);
 app.use("/api", commentRoutes);
@@ -65,7 +67,6 @@ app.use("/api",searchRoutes);
 app.use("/api/images", imageRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', videoRoutes);
-
 
 
 

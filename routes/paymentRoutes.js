@@ -43,10 +43,10 @@ router.post("/payment", async (req, res) => {
     total_amount: totalAmount,
     currency: "BDT",
     tran_id: uId,
-    success_url: `https://vaiyer-ponno-backend.onrender.com/api/payment/success/${uId}`,
-    fail_url: `https://vaiyer-ponno-backend.onrender.com/api/payment/fail/${uId}`,
-    cancel_url: `https://vaiyer-ponno-backend.onrender.com/api/payment/cancel/${uId}`,
-    ipn_url: "https://vaiyer-ponno-backend.onrender.com/ipn",
+    success_url: `http://localhost:5000/api/payment/success/${uId}`,
+    fail_url: `http://localhost:5000/api/payment/fail/${uId}`,
+    cancel_url: `http://localhost:5000/api/payment/cancel/${uId}`,
+    ipn_url: "http://localhost:5000/ipn",
     shipping_method: "Courier",
     product_name: "Product Purchase",
     product_category: "General",
@@ -186,6 +186,9 @@ router.post("/payment/fail/:id", async (req, res) => {
 
 // COD payment route
 router.post("/payment/cod", async (req, res) => {
+
+  // console.log(req.body)
+
   const uId = uuidv4();
   const {
     customerId,
@@ -249,7 +252,7 @@ router.post("/payment/cod", async (req, res) => {
               );
             } else {
               console.error(`Invalid quantity for product ${product.productId}`);
-            }
+            }   
           }
 
           const userUpdate = await User.updateOne(

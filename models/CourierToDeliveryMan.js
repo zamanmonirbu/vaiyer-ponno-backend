@@ -21,6 +21,10 @@ const courierToDeliveryManSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Indicates if the order has been assigned to the delivery man
     },
+    isReject: {
+      type: Boolean,
+      default: false, // Indicates if the order has been assigned to the delivery man
+    },
     isDelivered: {
       type: Boolean,
       default: false, // Indicates if the order has been delivered
