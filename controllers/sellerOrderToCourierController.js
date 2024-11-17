@@ -1,10 +1,8 @@
 const Order = require("../models/Order");
 const SellerOrderToCourier = require("../models/sellerOrderToCourierSchema");
 
-
 // Create a new SellerOrderToCourier entry
 const createSellerOrderToCourier = async (req, res) => {
-  
   try {
     const { orderId, courierId, isAccept, isReject } = req.body;
 
@@ -28,11 +26,16 @@ const createSellerOrderToCourier = async (req, res) => {
 
 // Get all SellerOrderToCourier entries
 const getAllSellerOrdersToCourier = async (req, res) => {
+  const { id } = req.params;
+  console.log(id);
   try {
     // Proper query to match both `isAccept` and `isReject` as false
     const entries = await SellerOrderToCourier.find({
+      courierId: id,
       isAccept: false,
       isReject: false,
+      isReceivedByDeliveryMan: false,
+      isSubmittedToDeliveryMan: false,
     }).populate("orderId courierId");
 
     res.status(200).json({ data: entries });
@@ -64,8 +67,7 @@ const getSellerOrderToCourierById = async (req, res) => {
 
 // Update delivery status (Accept or Reject)
 const updateSellerOrderToCourier = async (req, res) => {
-
-  console.log( req.body,req.params.id)
+  console.log(req.body, req.params.id);
 
   try {
     const { actionType } = req.body;
@@ -94,18 +96,24 @@ const updateSellerOrderToCourier = async (req, res) => {
     // If the assignment was accepted, update the SellerOrderToCourier document
     if (actionType === "accept") {
       await SellerOrderToCourier.findOneAndUpdate(
-        { orderId: updatedAssignment.orderId, courierId: updatedAssignment.courierId },
+        {
+          orderId: updatedAssignment.orderId,
+          courierId: updatedAssignment.courierId,
+        },
         { isAccept: true, isReject: false },
         { new: true }
       );
     } else if (actionType === "reject") {
       await SellerOrderToCourier.findOneAndUpdate(
-        { orderId: updatedAssignment.orderId, courierId: updatedAssignment.courierId },
+        {
+          orderId: updatedAssignment.orderId,
+          courierId: updatedAssignment.courierId,
+        },
         { isReject: true },
         { new: true }
       );
     }
-console.log(updatedAssignment);
+    console.log(updatedAssignment);
     // Update the Order model's sentToCourier field if the assignment was accepted
     if (updatedAssignment && actionType === "accept") {
       await Order.findByIdAndUpdate(
@@ -120,15 +128,13 @@ console.log(updatedAssignment);
       data: updatedAssignment,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({
       message: "Failed to update delivery status.",
       error: error.message,
     });
   }
 };
-
-
 
 // Delete a SellerOrderToCourier entry
 const deleteSellerOrderToCourier = async (req, res) => {
@@ -151,13 +157,17 @@ const deleteSellerOrderToCourier = async (req, res) => {
 
 // Accept an order
 const acceptOrder = async (req, res) => {
+  const { id } = req.params;
   try {
     const order = await SellerOrderToCourier.find({
+      courierId: id,
       isAccept: true,
       isSubmittedToDeliveryMan: false,
+      isReject: false,
+      isReceivedByDeliveryMan: false,
     }).populate("orderId courierId");
-    
-        if (!order) {
+
+    if (!order) {
       return res
         .status(404)
         .json({ success: false, message: "Order not found" });
@@ -175,7 +185,9 @@ const acceptOrder = async (req, res) => {
 // Cancel an order
 const cancelOrder = async (req, res) => {
   try {
-    const order = await SellerOrderToCourier.find({ isReject: true }).populate("orderId courierId");
+    const order = await SellerOrderToCourier.find({ isReject: true }).populate(
+      "orderId courierId"
+    );
 
     if (!order) {
       return res

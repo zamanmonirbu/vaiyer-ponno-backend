@@ -13,7 +13,7 @@ const router = express.Router();
 
 
 // Route to accept an order
-router.get("/accept/by/courier", acceptOrder);
+router.get("/accept/by/courier/:id", acceptOrder);
 
 // Route to cancel an order
 router.get("/reject/by/courier", cancelOrder);
@@ -22,7 +22,7 @@ router.get("/reject/by/courier", cancelOrder);
 router.post("/", createSellerOrderToCourier);
 
 // Get all entries
-router.get("/", getAllSellerOrdersToCourier);
+router.get("/request/:id", getAllSellerOrdersToCourier);
 
 // Get a single entry by ID
 router.get("/:id", getSellerOrderToCourierById);

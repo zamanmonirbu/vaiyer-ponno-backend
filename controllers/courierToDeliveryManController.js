@@ -1,10 +1,13 @@
 const CourierToDeliveryMan = require("../models/CourierToDeliveryMan");
 const Order = require("../models/Order");
+const SellerOrderToCourier = require("../models/sellerOrderToCourierSchema");
+
 
 // Assign an order to a delivery man
 const assignOrder = async (req, res) => {
   try {
     const { courierId, deliveryManId, orderId, note } = req.body;
+
     // Check if the assignment already exists
     const existingAssignment = await CourierToDeliveryMan.findOne({ orderId });
     if (existingAssignment) {
@@ -22,12 +25,30 @@ const assignOrder = async (req, res) => {
     });
 
     const savedAssignment = await newAssignment.save();
+
+    // Update the SellerOrderToCourier table
+    const updatedSellerOrder = await SellerOrderToCourier.findOneAndUpdate(
+      { _id:orderId, courierId }, // Match the order and courier
+      { isSubmittedToDeliveryMan: true }, // Set isSubmittedToDeliveryMan to true
+      { new: true } // Return the updated document
+    );
+
+    console.log(updatedSellerOrder)
+    if (!updatedSellerOrder) {
+      return res.status(404).json({
+        message: "Failed to update SellerOrderToCourier. Entry not found.",
+      });
+    }
+
     res.status(201).json({
       message: "Order successfully assigned to the delivery man.",
-      data: savedAssignment,
+      data: {
+        assignment: savedAssignment,
+        sellerOrderUpdate: updatedSellerOrder,
+      },
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({
       message: "Failed to assign order.",
       error: error.message,
