@@ -17,6 +17,11 @@ const courierToDeliveryManSchema = new mongoose.Schema(
       ref: "Order", // Reference to the Order model
       required: true,
     },
+    ctdId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SellerOrderToCourier", // Reference to the SellerOrderToCourier model
+      required: true,
+    },
     isAssigned: {
       type: Boolean,
       default: false, // Indicates if the order has been assigned to the delivery man

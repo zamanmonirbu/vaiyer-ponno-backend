@@ -2,11 +2,10 @@ const CourierToDeliveryMan = require("../models/CourierToDeliveryMan");
 const Order = require("../models/Order");
 const SellerOrderToCourier = require("../models/sellerOrderToCourierSchema");
 
-
 // Assign an order to a delivery man
 const assignOrder = async (req, res) => {
   try {
-    const { courierId, deliveryManId, orderId, note } = req.body;
+    const { courierId, deliveryManId, orderId, note, mainOrderId } = req.body;
 
     // Check if the assignment already exists
     const existingAssignment = await CourierToDeliveryMan.findOne({ orderId });
@@ -20,20 +19,21 @@ const assignOrder = async (req, res) => {
     const newAssignment = new CourierToDeliveryMan({
       courierId,
       deliveryManId,
-      orderId,
+      ctdId: orderId,
       notes: note,
+      orderId: mainOrderId,
     });
 
     const savedAssignment = await newAssignment.save();
 
     // Update the SellerOrderToCourier table
     const updatedSellerOrder = await SellerOrderToCourier.findOneAndUpdate(
-      { _id:orderId, courierId }, // Match the order and courier
+      { _id: orderId, courierId }, // Match the order and courier
       { isSubmittedToDeliveryMan: true }, // Set isSubmittedToDeliveryMan to true
       { new: true } // Return the updated document
     );
 
-    console.log(updatedSellerOrder)
+    console.log(updatedSellerOrder);
     if (!updatedSellerOrder) {
       return res.status(404).json({
         message: "Failed to update SellerOrderToCourier. Entry not found.",
@@ -56,7 +56,7 @@ const assignOrder = async (req, res) => {
   }
 };
 
-// Get all assignments
+// Get all assignments requested
 const getAllAssignments = async (req, res) => {
   const { deliveryManId } = req.params;
 
@@ -66,9 +66,10 @@ const getAllAssignments = async (req, res) => {
       isAssigned: false, // Only include unassigned orders
       isDelivered: false, // Only include undelivered orders
     })
-      .populate("courierId") // Populate courier name
-      .populate("deliveryManId") // Populate delivery man details
-      .populate("orderId"); // Populate order details
+      .populate("courierId") 
+      .populate("deliveryManId")
+      .populate("orderId")
+      .populate("ctdId");
 
     res.status(200).json(assignments);
   } catch (error) {
@@ -237,8 +238,6 @@ const updateCompleteStatus = async (req, res) => {
   }
 };
 
-
-
 // Delete an assignment
 const deleteAssignment = async (req, res) => {
   const { id } = req.params;
@@ -262,14 +261,15 @@ const deleteAssignment = async (req, res) => {
   }
 };
 
-
 // Get assigned orders by deliveryManId
 const getAssignedOrders = async (req, res) => {
   const { deliveryManId } = req.params;
   try {
     const assignedOrders = await CourierToDeliveryMan.find({
       deliveryManId,
-      isAssigned: true, // Filter for assigned orders
+      isAssigned: true,
+      isDelivered: false,
+      isReject: false,
     }).populate("orderId courierId deliveryManId");
 
     res.status(200).json(assignedOrders);
@@ -316,7 +316,6 @@ const getDeliveredOrders = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   assignOrder,
