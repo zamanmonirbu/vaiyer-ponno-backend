@@ -28,7 +28,7 @@ router.get("/request/:id", getAllSellerOrdersToCourier);
 router.get("/:id", getSellerOrderToCourierById);
 
 // Update an entry
-router.put("/:id", updateSellerOrderToCourier);
+router.put("/upadate/accept/order/:id", updateSellerOrderToCourier);
 
 // Delete an entry
 router.delete("/:id", deleteSellerOrderToCourier);

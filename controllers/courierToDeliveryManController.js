@@ -66,7 +66,7 @@ const getAllAssignments = async (req, res) => {
       isAssigned: false, // Only include unassigned orders
       isDelivered: false, // Only include undelivered orders
     })
-      .populate("courierId") 
+      .populate("courierId")
       .populate("deliveryManId")
       .populate("orderId")
       .populate("ctdId");
@@ -159,6 +159,17 @@ const updateDeliveryStatus = async (req, res) => {
         { new: true }
       );
     }
+
+    if (updatedAssignment) {
+      await SellerOrderToCourier.findByIdAndUpdate(
+        updatedAssignment.orderId,
+        {
+          isReceivedByDeliveryMan: true,
+        },
+        { new: true }
+      );
+    }
+
     res.status(200).json({
       message: "Delivery status updated successfully.",
       data: updatedAssignment,

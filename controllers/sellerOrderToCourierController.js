@@ -67,7 +67,6 @@ const getSellerOrderToCourierById = async (req, res) => {
 
 // Update delivery status (Accept or Reject)
 const updateSellerOrderToCourier = async (req, res) => {
-  console.log(req.body, req.params.id);
 
   try {
     const { actionType } = req.body;
@@ -82,12 +81,14 @@ const updateSellerOrderToCourier = async (req, res) => {
       return res.status(400).json({ message: "Invalid actionType" });
     }
 
+
     // Find and update the CourierToDeliveryMan entry
     const updatedAssignment = await SellerOrderToCourier.findByIdAndUpdate(
       req.params.id,
       updateFields,
       { new: true } // Return the updated document
     );
+
 
     if (!updatedAssignment) {
       return res.status(404).json({ message: "Assignment not found" });
@@ -113,12 +114,17 @@ const updateSellerOrderToCourier = async (req, res) => {
         { new: true }
       );
     }
-    console.log(updatedAssignment);
+
     // Update the Order model's sentToCourier field if the assignment was accepted
     if (updatedAssignment && actionType === "accept") {
       await Order.findByIdAndUpdate(
         updatedAssignment.orderId,
-        { sentToCourier: true, sentToCourierAt: new Date() },
+        {
+          sentToCourier: true,
+          sentToCourierAt: new Date(),
+          // sellerAccepted: true,
+          // sellerAcceptedAt: new Date(),
+        },
         { new: true }
       );
     }

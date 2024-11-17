@@ -11,7 +11,7 @@ const OrderSchema = new mongoose.Schema(
     customerMobile: String,
     totalAmount: Number,
     products: Array,
-    status: Boolean, // Completed or Pending status
+    status: Boolean, 
     sellerIds: Array,
     productIds: Array,
     currency: String,
@@ -30,6 +30,16 @@ const OrderSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // Initially set to false
     },
+      // Rejection fields
+      sellerRejected: {
+        type: Boolean,
+        default: false, // Initially set to false
+      },
+      rejectionReason: {
+        type: String,
+        default: "", // Stores reason for rejection (if any)
+      },
+  
     sentToCourier: {
       type: Boolean,
       default: false, // Initially set to false
@@ -43,16 +53,7 @@ const OrderSchema = new mongoose.Schema(
       default: false, // Initially set to false
     },
 
-    // Rejection fields
-    sellerRejected: {
-      type: Boolean,
-      default: false, // Initially set to false
-    },
-    rejectionReason: {
-      type: String,
-      default: "", // Stores reason for rejection (if any)
-    },
-
+  
     // Timestamps for tracking when these actions occurred
     sellerAcceptedAt: Date,
     sentToCourierAt: Date,

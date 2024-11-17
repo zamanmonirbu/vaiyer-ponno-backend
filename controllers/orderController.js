@@ -1,5 +1,6 @@
 // controllers/orderController.js
 
+const CourierToDeliveryMan = require("../models/CourierToDeliveryMan");
 const Order = require("../models/Order");
 const SellerOrderToCourier = require("../models/sellerOrderToCourierSchema");
 const User = require("../models/User");
@@ -196,24 +197,27 @@ const markOrderAsSentToCourier = async (req, res) => {
     const { orderId } = req.params;
     const { courierId } = req.body;
 
+    console.log(orderId, courierId);
+
     // Update the order
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       {
         sentToCourier: true, // Mark as sent to courier
         sentToCourierAt: new Date(), // Timestamp
-        sellerAccepted: null, // Reset sellerAccepted
-        sellerAcceptedAt: null, // Reset sellerAcceptedAt timestamp
       },
       { new: true } // Return updated document
     );
 
+    console.log(updateOrder);
     // Save to SellerOrderToCourier
     const sentToCourier = new SellerOrderToCourier({ courierId, orderId });
-    await sentToCourier.save();
+    const createCourier = await sentToCourier.save();
 
+    console.log(createCourier);
     res.status(200).json(updatedOrder);
   } catch (error) {
+    console.log(error);
     res
       .status(500)
       .json({ message: "Failed to mark order as sent to courier", error });
@@ -247,22 +251,34 @@ const markOrderAsHandedToDeliveryMan = async (req, res) => {
 const markOrderAsCompleted = async (req, res) => {
   try {
     const { orderId } = req.params;
+    console.log(orderId);
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       {
-        orderCompleted: true, // Mark as completed
-        orderCompletedAt: new Date(), // Timestamp
-        courierToDeliveryMan: null,
-        courierToDeliveryManAt: null,
+        orderCompleted: true,
+        orderCompletedAt: new Date(),
+        status: true,
       },
       { new: true } // Return updated document
     );
+
+    
+      await CourierToDeliveryMan.findByIdAndUpdate(
+        orderId,
+        {
+          isDelivered: true,
+        },
+        { new: true } // Return updated document
+      );
+    
+
     res.status(200).json(updatedOrder);
   } catch (error) {
-    res.status(500).json({ message: "Failed to mark order as completed", error });
+    res
+      .status(500)
+      .json({ message: "Failed to mark order as completed", error });
   }
 };
-
 
 // Mark order as rejected by seller
 const markOrderAsRejected = async (req, res) => {
@@ -284,19 +300,23 @@ const markOrderAsRejected = async (req, res) => {
 // Fetch orders where 'sellerAccepted' is true and sellerId is in the sellerIds array
 const getOrdersBySellerAccepted = async (req, res) => {
   const { sellerId } = req.params;
+  console.log(sellerId);
   try {
     const orders = await Order.find({
       sellerAccepted: true,
+      sentToCourier: false,
+      // orderComplete: false,
+      // courierToDeliveryMan:false,
+      // orderCompleted:false,
       sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
     });
     res.status(200).json(orders);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Failed to get orders marked as accepted by seller",
-        error,
-      });
+    console.log(error);
+    res.status(500).json({
+      message: "Failed to get orders marked as accepted by seller",
+      error,
+    });
   }
 };
 
@@ -310,12 +330,10 @@ const getOrdersBySentToCourier = async (req, res) => {
     });
     res.status(200).json(orders);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Failed to get orders marked as sent to courier",
-        error,
-      });
+    res.status(500).json({
+      message: "Failed to get orders marked as sent to courier",
+      error,
+    });
   }
 };
 
@@ -329,12 +347,10 @@ const getOrdersByHandedToDeliveryMan = async (req, res) => {
     });
     res.status(200).json(orders);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Failed to get orders marked as handed to delivery man",
-        error,
-      });
+    res.status(500).json({
+      message: "Failed to get orders marked as handed to delivery man",
+      error,
+    });
   }
 };
 
@@ -364,12 +380,10 @@ const getOrdersBySellerRejected = async (req, res) => {
     });
     res.status(200).json(orders);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Failed to get orders marked as rejected by seller",
-        error,
-      });
+    res.status(500).json({
+      message: "Failed to get orders marked as rejected by seller",
+      error,
+    });
   }
 };
 
