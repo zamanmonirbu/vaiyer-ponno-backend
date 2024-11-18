@@ -51,16 +51,13 @@ const getOrdersBySellerId = async (req, res) => {
   }
 };
 
-// Fetch orders by seller ID
 const getOrderByOrderId = async (req, res) => {
   try {
     const orderId = req.params.orderId;
 
-    const orderDetails = await Order.findOne({ tran_id: orderId });
-    if (orderDetails.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No orders found for this seller" });
+    const orderDetails = await Order.findOne({ tran_id: orderId }).sort({ createdAt: -1 });
+    if (!orderDetails) { // Since you're using `findOne`, checking for null is appropriate
+      return res.status(404).json({ message: "No orders found for this seller" });
     }
     res.status(200).json(orderDetails);
   } catch (error) {
@@ -68,7 +65,6 @@ const getOrderByOrderId = async (req, res) => {
   }
 };
 
-// Find orders with any specified status set to true
 const findOrdersByStatus = async (req, res) => {
   try {
     const orders = await Order.find({
@@ -79,14 +75,15 @@ const findOrdersByStatus = async (req, res) => {
         { orderCompleted: true },
         { sellerRejected: true },
       ],
-    });
+    }).sort({ createdAt: -1 }); // Sort orders by `createdAt` field in descending order
+
     res.status(200).json(orders);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch orders by status", error });
+    res.status(500).json({ message: "Failed to fetch orders by status", error });
   }
 };
+
+
 
 // Create a new order
 const createOrder = async (req, res) => {
