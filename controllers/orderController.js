@@ -6,7 +6,6 @@ const SellerOrderToCourier = require("../models/sellerOrderToCourierSchema");
 const User = require("../models/User");
 
 // Fetch orders by user ID
-// Fetch orders by user ID
 const getOrdersByUserId = async (req, res) => {
   try {
     const userId = req.params.userId;
