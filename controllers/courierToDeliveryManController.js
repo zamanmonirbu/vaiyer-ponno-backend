@@ -56,7 +56,6 @@ const assignOrder = async (req, res) => {
   }
 };
 
-// Get all assignments requested
 const getAllAssignments = async (req, res) => {
   const { deliveryManId } = req.params;
 
@@ -69,7 +68,8 @@ const getAllAssignments = async (req, res) => {
       .populate("courierId")
       .populate("deliveryManId")
       .populate("orderId")
-      .populate("ctdId");
+      .populate("ctdId")
+      .sort({ createdAt: -1 }); // Sort by `createdAt` field in descending order
 
     res.status(200).json(assignments);
   } catch (error) {
@@ -80,14 +80,14 @@ const getAllAssignments = async (req, res) => {
   }
 };
 
-// Get assignments by courier
 const getAssignmentsByCourier = async (req, res) => {
   const { courierId } = req.params;
 
   try {
     const assignments = await CourierToDeliveryMan.find({ courierId })
       .populate("deliveryManId", "firstName lastName phone")
-      .populate("orderId", "tran_id customerName");
+      .populate("orderId", "tran_id customerName")
+      .sort({ createdAt: -1 }); // Sort by `createdAt` field in descending order
 
     if (assignments.length === 0) {
       return res
@@ -103,6 +103,7 @@ const getAssignmentsByCourier = async (req, res) => {
     });
   }
 };
+
 
 // Update delivery status (Accept or Reject)
 const updateDeliveryStatus = async (req, res) => {
