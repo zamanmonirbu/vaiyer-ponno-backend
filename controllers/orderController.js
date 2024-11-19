@@ -1,9 +1,11 @@
 // controllers/orderController.js
 
 const CourierToDeliveryMan = require("../models/CourierToDeliveryMan");
+const DeliveryMan = require("../models/DeliveryMan");
 const Order = require("../models/Order");
 const SellerOrderToCourier = require("../models/sellerOrderToCourierSchema");
 const User = require("../models/User");
+DeliveryMan
 
 // Fetch orders by user ID
 const getOrdersByUserId = async (req, res) => {
@@ -54,9 +56,14 @@ const getOrderByOrderId = async (req, res) => {
   try {
     const orderId = req.params.orderId;
 
-    const orderDetails = await Order.findOne({ tran_id: orderId }).sort({ createdAt: -1 });
-    if (!orderDetails) { // Since you're using `findOne`, checking for null is appropriate
-      return res.status(404).json({ message: "No orders found for this seller" });
+    const orderDetails = await Order.findOne({ tran_id: orderId }).sort({
+      createdAt: -1,
+    });
+    if (!orderDetails) {
+      // Since you're using `findOne`, checking for null is appropriate
+      return res
+        .status(404)
+        .json({ message: "No orders found for this seller" });
     }
     res.status(200).json(orderDetails);
   } catch (error) {
@@ -78,11 +85,11 @@ const findOrdersByStatus = async (req, res) => {
 
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch orders by status", error });
+    res
+      .status(500)
+      .json({ message: "Failed to fetch orders by status", error });
   }
 };
-
-
 
 // Create a new order
 const createOrder = async (req, res) => {
@@ -141,7 +148,9 @@ const getOrderById = async (req, res) => {
   const { orderId } = req.params;
 
   try {
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(orderId).sort({
+      createdAt: -1,
+    });
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
@@ -158,7 +167,9 @@ const getAllOrders = async (req, res) => {
   const filters = req.query;
 
   try {
-    const orders = await Order.find(filters);
+    const orders = await Order.find(filters).sort({
+      createdAt: -1,
+    });
     res.status(200).json(orders);
   } catch (error) {
     res
@@ -205,7 +216,7 @@ const markOrderAsSentToCourier = async (req, res) => {
       { new: true } // Return updated document
     );
 
-    console.log(updateOrder);
+    // console.log(updateOrder);
     // Save to SellerOrderToCourier
     const sentToCourier = new SellerOrderToCourier({ courierId, orderId });
     const createCourier = await sentToCourier.save();
@@ -258,15 +269,35 @@ const markOrderAsCompleted = async (req, res) => {
       { new: true } // Return updated document
     );
 
+    const upddateCouriertoDeliveryMan=await CourierToDeliveryMan.findByIdAndUpdate(
+      orderId,
+      {
+        isDelivered: true,
+      },
+      { new: true } // Return updated document
+    );
+
+    if(upddateCouriertoDeliveryMan){
+
     
-      await CourierToDeliveryMan.findByIdAndUpdate(
-        orderId,
-        {
-          isDelivered: true,
-        },
-        { new: true } // Return updated document
-      );
-    
+    console.log("updated CourierToDeliveryMan",upddateCouriertoDeliveryMan);
+  }
+  else{
+    console.log("cant update",CourierToDeliveryMan);
+  }
+
+    //  // Find the delivery man assigned to this order and update their `assignedOrder` to null
+    //  const deliveryMan = await DeliveryMan.findOneAndUpdate(
+    //   { _id:upddateCouriertoDeliveryMan.orderId },
+    //   { assignedOrder: null }, // Clear the assigned order
+    //   { new: true } // Return the updated document
+    // );
+
+    // if (!deliveryMan) {
+    //   return res.status(404).json({
+    //     message: "Delivery man not found for this order",
+    //   });
+    // }
 
     res.status(200).json(updatedOrder);
   } catch (error) {
@@ -301,10 +332,9 @@ const getOrdersBySellerAccepted = async (req, res) => {
     const orders = await Order.find({
       sellerAccepted: true,
       sentToCourier: false,
-      // orderComplete: false,
-      // courierToDeliveryMan:false,
-      // orderCompleted:false,
       sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
+    }).sort({
+      createdAt: -1,
     });
     res.status(200).json(orders);
   } catch (error) {
@@ -323,6 +353,8 @@ const getOrdersBySentToCourier = async (req, res) => {
     const orders = await Order.find({
       sentToCourier: true,
       sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
+    }).sort({
+      createdAt: -1,
     });
     res.status(200).json(orders);
   } catch (error) {
@@ -340,6 +372,8 @@ const getOrdersByHandedToDeliveryMan = async (req, res) => {
     const orders = await Order.find({
       courierToDeliveryMan: true,
       sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
+    }).sort({
+      createdAt: -1,
     });
     res.status(200).json(orders);
   } catch (error) {
@@ -357,6 +391,8 @@ const getOrdersByCompleted = async (req, res) => {
     const orders = await Order.find({
       orderCompleted: true,
       sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
+    }).sort({
+      createdAt: -1,
     });
     res.status(200).json(orders);
   } catch (error) {
@@ -373,6 +409,8 @@ const getOrdersBySellerRejected = async (req, res) => {
     const orders = await Order.find({
       sellerRejected: true,
       sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
+    }).sort({
+      createdAt: -1,
     });
     res.status(200).json(orders);
   } catch (error) {

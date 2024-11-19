@@ -89,7 +89,7 @@ const loginDeliveryMan = async (req, res) => {
 // Fetch DeliveryMan Profile Controller
 const getDeliveryManProfile = async (req, res) => {
   try {
-    const deliveryMan = await DeliveryMan.findById(req.params.id);
+    const deliveryMan = await DeliveryMan.findById(req.params.id).populate('vehicleType');
     if (!deliveryMan) {
       return res.status(404).json({ message: "DeliveryMan not found" });
     }

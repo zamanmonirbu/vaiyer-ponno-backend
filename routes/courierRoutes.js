@@ -16,9 +16,9 @@ router.post("/register", registerCourier);
 router.post("/login", loginCourier);
 
 // GET /api/couriers/profile (Protected Route)
-router.get("/profile/:courierId", courierAuth, getCourierProfile);
+router.get("/profile/:courierId", getCourierProfile);
 
-router.put("/profile/:courierId", courierAuth, updateCourierProfile);
+router.put("/profile/:courierId", updateCourierProfile);
 
 router.get("/", getAllCouriers); // Route to get all couriers
 

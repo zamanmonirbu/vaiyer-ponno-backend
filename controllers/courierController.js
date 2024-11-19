@@ -40,7 +40,7 @@ exports.registerCourier = async (req, res) => {
       password,
       phone,
       address,
-      vehicleType,
+      // vehicleType,
     });
 
     res.status(201).json({
@@ -70,7 +70,9 @@ exports.loginCourier = async (req, res) => {
           email: courier.email,
           phone: courier.phone,
           address: courier.address,
-          vehicleType: courier.vehicleType,
+          image: courier.image,
+
+          // vehicleType: courier.vehicleType,
         },
         token: generateToken(courier._id),
       });
@@ -87,10 +89,12 @@ exports.getCourierProfile = async (req, res) => {
   const { courierId } = req.params;
 
   try {
-    const courier = await Courier.findById(req.user._id);
+    const courier = await Courier.findById(courierId);
     if (!courier) {
       return res.status(404).json({ message: "Courier not found" });
     }
+
+    console.log(courier)
     // Respond with profile object
     res.json({
       profile: {
@@ -99,7 +103,7 @@ exports.getCourierProfile = async (req, res) => {
         email: courier.email,
         phone: courier.phone,
         address: courier.address,
-        vehicleType: courier.vehicleType,
+        // vehicleType: courier.vehicleType,
         image: courier.image,
       },
     });
@@ -125,7 +129,7 @@ exports.updateCourierProfile = async (req, res) => {
     courier.name = name || courier.name;
     courier.phone = phone || courier.phone;
     courier.address = address || courier.address;
-    courier.vehicleType = vehicleType || courier.vehicleType;
+    // courier.vehicleType = vehicleType || courier.vehicleType;
     courier.image = image || courier.image;
 
     const updatedCourier = await courier.save();
@@ -139,7 +143,7 @@ exports.updateCourierProfile = async (req, res) => {
         email: updatedCourier.email,
         phone: updatedCourier.phone,
         address: updatedCourier.address,
-        vehicleType: updatedCourier.vehicleType,
+        // vehicleType: updatedCourier.vehicleType,
         image: updatedCourier.image,
       },
     });
