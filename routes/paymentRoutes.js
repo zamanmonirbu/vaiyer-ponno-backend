@@ -11,6 +11,8 @@ dotenv.config();
 
 const store_id = process.env.Store_ID;
 const store_passwd = process.env.Store_Password;
+const frontEnd = process.env.FRONTEND_URL;
+const backEnd = process.env.BACKEND_URL;
 const is_live = false;
 
 // Main payment route
@@ -43,10 +45,10 @@ router.post("/payment", async (req, res) => {
     total_amount: totalAmount,
     currency: "BDT",
     tran_id: uId,
-    success_url: `http://localhost:5000/api/payment/success/${uId}`,
-    fail_url: `http://localhost:5000/api/payment/fail/${uId}`,
-    cancel_url: `http://localhost:5000/api/payment/cancel/${uId}`,
-    ipn_url: "http://localhost:5000/ipn",
+    success_url: `${backEnd}/api/payment/success/${uId}`,
+    fail_url: `${backEnd}/api/payment/fail/${uId}`,
+    cancel_url: `${backEnd}/api/payment/cancel/${uId}`,
+    ipn_url: "${backEnd}/ipn",
     shipping_method: "Courier",
     product_name: "Product Purchase",
     product_category: "General",
@@ -134,7 +136,7 @@ router.post("/payment/success/:id", async (req, res) => {
       );
 
       if (userUpdate.modifiedCount > 0) {
-        res.redirect(`http://localhost:5173/payment/success/${id}`);
+        res.redirect(`${frontEnd}/payment/success/${id}`);
       } else {
         res.status(404).json({ error: "User not found or already updated" });
       }
@@ -155,7 +157,7 @@ router.post("/payment/cancel/:id", async (req, res) => {
   const { id } = req.params;
   try {
     await Order.updateOne({ tran_id: id }, { $set: { status: false } });
-    res.redirect(`http://localhost:5173/payment/cancel/${id}`);
+    res.redirect(`${frontEnd}/payment/cancel/${id}`);
   } catch (error) {
     console.error("Error handling cancel order:", error);
     res.status(500).json({
@@ -170,7 +172,7 @@ router.post("/payment/fail/:id", async (req, res) => {
   const { id } = req.params;
   try {
     await Order.updateOne({ tran_id: id }, { $set: { status: false } });
-    res.redirect(`http://localhost:5173/payment/fail/${id}`);
+    res.redirect(`${frontEnd}/payment/fail/${id}`);
   } catch (error) {
     console.error("Error handling failed order:", error);
     res.status(500).json({
