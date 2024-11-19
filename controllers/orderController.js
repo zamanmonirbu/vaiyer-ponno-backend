@@ -5,7 +5,7 @@ const DeliveryMan = require("../models/DeliveryMan");
 const Order = require("../models/Order");
 const SellerOrderToCourier = require("../models/sellerOrderToCourierSchema");
 const User = require("../models/User");
-DeliveryMan
+DeliveryMan;
 
 // Fetch orders by user ID
 const getOrdersByUserId = async (req, res) => {
@@ -113,11 +113,8 @@ const updateOrder = async (req, res) => {
       new: true,
     });
     if (!updatedOrder) {
-      // console.log("Working not")
       return res.status(404).json({ error: "Order not found" });
     }
-    // console.log("Working")
-
     res.status(200).json(updatedOrder);
   } catch (error) {
     res
@@ -203,9 +200,6 @@ const markOrderAsSentToCourier = async (req, res) => {
   try {
     const { orderId } = req.params;
     const { courierId } = req.body;
-
-    console.log(orderId, courierId);
-
     // Update the order
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
@@ -215,16 +209,11 @@ const markOrderAsSentToCourier = async (req, res) => {
       },
       { new: true } // Return updated document
     );
-
-    // console.log(updateOrder);
     // Save to SellerOrderToCourier
     const sentToCourier = new SellerOrderToCourier({ courierId, orderId });
     const createCourier = await sentToCourier.save();
-
-    console.log(createCourier);
     res.status(200).json(updatedOrder);
   } catch (error) {
-    console.log(error);
     res
       .status(500)
       .json({ message: "Failed to mark order as sent to courier", error });
@@ -253,12 +242,13 @@ const markOrderAsHandedToDeliveryMan = async (req, res) => {
     });
   }
 };
-
-// Mark order as completed
 const markOrderAsCompleted = async (req, res) => {
   try {
     const { orderId } = req.params;
+
     console.log(orderId);
+
+    // Update the Order to mark it as completed
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       {
@@ -269,41 +259,41 @@ const markOrderAsCompleted = async (req, res) => {
       { new: true } // Return updated document
     );
 
-    const upddateCouriertoDeliveryMan=await CourierToDeliveryMan.findByIdAndUpdate(
-      orderId,
-      {
-        isDelivered: true,
-      },
-      { new: true } // Return updated document
+    if (!updatedOrder) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Update the CourierToDeliveryMan entry
+    const updatedDeliveryStatus = await CourierToDeliveryMan.findOneAndUpdate(
+      { orderId }, // Filter by orderId
+      { isDelivered: true }, // Update to set isDelivered to true
+      { new: true } // Return the updated document
     );
 
-    if(upddateCouriertoDeliveryMan){
+    if (!updatedDeliveryStatus) {
+      return res.status(404).json({
+        success: false,
+        message: "CourierToDeliveryMan entry not found",
+      });
+    }
 
-    
-    console.log("updated CourierToDeliveryMan",upddateCouriertoDeliveryMan);
-  }
-  else{
-    console.log("cant update",CourierToDeliveryMan);
-  }
-
-    //  // Find the delivery man assigned to this order and update their `assignedOrder` to null
-    //  const deliveryMan = await DeliveryMan.findOneAndUpdate(
-    //   { _id:upddateCouriertoDeliveryMan.orderId },
-    //   { assignedOrder: null }, // Clear the assigned order
-    //   { new: true } // Return the updated document
-    // );
-
-    // if (!deliveryMan) {
-    //   return res.status(404).json({
-    //     message: "Delivery man not found for this order",
-    //   });
-    // }
-
-    res.status(200).json(updatedOrder);
+    // Return a success response with updated details
+    res.status(200).json({
+      success: true,
+      message: "Order marked as completed and delivery status updated successfully",
+      updatedOrder,
+      updatedDeliveryStatus,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to mark order as completed", error });
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark order as completed",
+      error: error.message,
+    });
   }
 };
 
@@ -327,15 +317,14 @@ const markOrderAsRejected = async (req, res) => {
 // Fetch orders where 'sellerAccepted' is true and sellerId is in the sellerIds array
 const getOrdersBySellerAccepted = async (req, res) => {
   const { sellerId } = req.params;
-  console.log(sellerId);
   try {
     const orders = await Order.find({
       sellerAccepted: true,
       sentToCourier: false,
       sellerIds: { $in: [sellerId] }, // Check if sellerId is in the sellerIds array
-    }).sort({
-      createdAt: -1,
-    });
+    }).sort({ createdAt: -1 }); // Sort orders by creation time in descending order
+
+    console.log(orders);
     res.status(200).json(orders);
   } catch (error) {
     console.log(error);

@@ -27,7 +27,6 @@ const createSellerOrderToCourier = async (req, res) => {
 // Get all SellerOrderToCourier entries
 const getAllSellerOrdersToCourier = async (req, res) => {
   const { id } = req.params;
-  console.log(id);
   try {
     // Proper query to match both `isAccept` and `isReject` as false
     const entries = await SellerOrderToCourier.find({
@@ -36,7 +35,11 @@ const getAllSellerOrdersToCourier = async (req, res) => {
       isReject: false,
       isReceivedByDeliveryMan: false,
       isSubmittedToDeliveryMan: false,
-    }).populate("orderId courierId");
+    })
+      .populate("orderId courierId")
+      .sort({
+        createdAt: -1,
+      });
 
     res.status(200).json({ data: entries });
   } catch (error) {
@@ -67,7 +70,6 @@ const getSellerOrderToCourierById = async (req, res) => {
 
 // Update delivery status (Accept or Reject)
 const updateSellerOrderToCourier = async (req, res) => {
-
   try {
     const { actionType } = req.body;
 
@@ -81,14 +83,12 @@ const updateSellerOrderToCourier = async (req, res) => {
       return res.status(400).json({ message: "Invalid actionType" });
     }
 
-
     // Find and update the CourierToDeliveryMan entry
     const updatedAssignment = await SellerOrderToCourier.findByIdAndUpdate(
       req.params.id,
       updateFields,
       { new: true } // Return the updated document
     );
-
 
     if (!updatedAssignment) {
       return res.status(404).json({ message: "Assignment not found" });
@@ -171,7 +171,9 @@ const acceptOrder = async (req, res) => {
       isSubmittedToDeliveryMan: false,
       isReject: false,
       isReceivedByDeliveryMan: false,
-    }).populate("orderId courierId");
+    }).populate("orderId courierId").sort({
+      createdAt: -1,
+    });
 
     if (!order) {
       return res

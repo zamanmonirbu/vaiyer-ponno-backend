@@ -27,6 +27,10 @@ const deliveryManSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  image: {
+    type: String,
+   
+  },
   courierId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Courier", // Link to the Courier model

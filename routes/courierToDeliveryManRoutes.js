@@ -17,7 +17,7 @@ router.post("/", assignOrder);
 
 // Get all assignments
 router.get("/request/to/delivery/man/:deliveryManId", getAllAssignments);
-
+                                
 // Get assignments by courier ID
 router.get("/:courierId", getAssignmentsByCourier);
 

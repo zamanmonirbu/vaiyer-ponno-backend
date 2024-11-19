@@ -282,7 +282,9 @@ const getAssignedOrders = async (req, res) => {
       isAssigned: true,
       isDelivered: false,
       isReject: false,
-    }).populate("orderId courierId deliveryManId");
+    }).populate("orderId courierId deliveryManId").sort({
+      createdAt: -1,
+    });
 
     res.status(200).json(assignedOrders);
   } catch (error) {

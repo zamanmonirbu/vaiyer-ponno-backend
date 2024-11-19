@@ -102,8 +102,10 @@ const getDeliveryManProfile = async (req, res) => {
 
 // Update DeliveryMan Profile Controller
 const updateDeliveryManProfile = async (req, res) => {
-  const { name, phone, address, vehicleType, firstname, lastname, nid } =
+  const { name, phone, address, vehicleType, firstname, lastname, nid,profilePicture } =
     req.body;
+
+    console.log(req.body)
 
   try {
     const deliveryMan = await DeliveryMan.findById(req.params.id);
@@ -111,6 +113,7 @@ const updateDeliveryManProfile = async (req, res) => {
       return res.status(404).json({ message: "DeliveryMan not found" });
     }
 
+    const image=profilePicture;
     // Update profile
     deliveryMan.name = name || deliveryMan.name;
     deliveryMan.phone = phone || deliveryMan.phone;
@@ -119,6 +122,7 @@ const updateDeliveryManProfile = async (req, res) => {
     deliveryMan.firstname = firstname || deliveryMan.firstname;
     deliveryMan.lastname = lastname || deliveryMan.lastname;
     deliveryMan.nid = nid || deliveryMan.nid;
+    deliveryMan.image = image || deliveryMan.image;
 
     await deliveryMan.save();
 
