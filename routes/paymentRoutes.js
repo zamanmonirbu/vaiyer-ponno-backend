@@ -13,12 +13,14 @@ const store_id = process.env.Store_ID;
 const store_passwd = process.env.Store_Password;
 const frontEnd = process.env.FRONTEND_URL;
 const backEnd = process.env.BACKEND_URL;
-const is_live = false;
+const is_live = true;
+
+
 
 // Main payment route
 router.post("/payment", async (req, res) => {
-  const uId = uuidv4();
   
+  const uId = uuidv4();
   const {
     customerId,
     customerName,
